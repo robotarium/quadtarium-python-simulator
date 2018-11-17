@@ -3,7 +3,8 @@
 # 10/14/18
 # This file provides an example of how to send commands to the Robotarium for moving a number of quadcopters from one pose
 # to another.
-from utilities.Robotarium import RobotariumEnvironment
+from utilities.robotarium_simulation_builder import RobotariumEnvironment
+import numpy as np
 
 TIMEOUT = False
 
@@ -14,36 +15,42 @@ if __name__ == "__main__":
     # robotarium object sets a random number of agents to be created
 
     # sets the number of agents
-    # robotarium.number_of_agents = 5
+    robotarium.number_of_agents = 1
 
-    #iterate until time limit is reached, the max time our quadcopters can run is 5 minutes so experiments will be
-    #limited to that time
+    # iterate until time limit is reached, the max time our quadcopters can run is 5 minutes so experiments will be
+    # limited to that time
 
-    #Iteration method is arbitrary, we will provide a function to check if experiment will timeout however
+    # Iteration method is arbitrary, we will provide a function to check if experiment will timeout however
 
-    # instantiates Robotarium and initializes quadcopters
+    # if specific initial poses are desired, set robotarium.initial_poses
+    # robotarium.initial_poses = np.array([[0.1, 0.1, -0.5], [1, 0.3, -1.3], [1, 1, -1.2]])
+
+    # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set
     robotarium.build()
 
-    while TIMEOUT is False:
+    x_desired = np.array([[[1, -1, -0.5]],# , [1, 0.4, -1.3], [1, 1.1, -1.2]],
+                          [[-1, 1, -0.7]]]) # , [-1, -0.44, -1], [0.8, -0.8, -0.6]]])
+
+    i = 0
+    time_lim = 1000
+
+
+
+    while i < x_desired.shape[0]:
         # retrieve quadcopter poses (numpy array, n x m x 3) where n is the quadcopter index
         x = robotarium.get_quadcopter_poses()
 
-        # Insert code here
+        # Insert your code here!!
 
         # Set desired pose
-        robotarium.set_desired_pose(x_desired)
 
+        while np.linalg.norm(robotarium.poses - x_desired[i]) > 0.1:
+            robotarium.set_desired_poses(x_desired[i])
+            # send pose commands to robotarium
+            robotarium.update_poses()
 
-        # send pose commands to robotarium
-        robotarium.update_pose()
-
-        #call timeout function to check if algorithm will run to completion
-        TIMEOUT = robotarium.check_timeout()
-
-        # also users can self limit runtime of program
-        if robotarium.run_time() > 60:
-            TIMEOUT = True
-
+        i += 1
+    robotarium.save_data()
 
 
 
