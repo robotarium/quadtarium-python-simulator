@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as Dim3
 from control import acker
+from cvxopt import matrix, solvers
 import time
 import pickle
 from utilities.actuation import invert_diff_flat_output, projection_controller
@@ -22,8 +23,8 @@ class RobotariumEnvironment(object):
         self.x_state = dict()
         self.xd = dict()
         self.u = dict()
-        self.orientation = dict()
-        self.pose = dict()
+        self.orientation_real = dict()
+        self.pose_real = dict()
         self.dt = 0.02
         self.count = 0
         self.time_record = dict()
@@ -36,6 +37,7 @@ class RobotariumEnvironment(object):
         self.robotarium_simulator_plot = None
         self.barriers = barriers
         self.save_flag = save_data
+        solvers.options['show_progress'] = False
 
     def get_quadcopter_poses(self):
         poses = np.zeros((self.number_of_agents, 3))
@@ -108,15 +110,18 @@ class RobotariumEnvironment(object):
             print("desired point: {0} for robot: {1} \n".format(desired_point, i))
             self.u[i] = desired_point[3, :] - np.dot(self.Kb, self.x_state[i] - desired_point)
             print("u: ",self.u[i])
+        if self.barriers == True:
+            self.u = self.Safe_Barrier_3D(self.x_state)
+        for i in range(self.number_of_agents):
             self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
             self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
             self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
             self.poses[i] = self.x_state[i][0, :]
-            self.pose[i], self.orientation[i] = self.crazyflie_objects[i].update_pose_and_orientation()
+            self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
         plt.pause(0.02)
         self.time_record[self.count] = str(self.run_time())
-        self.x_record[self.count] = self.pose
-        self.orientation_record[self.count] = self.orientation
+        self.x_record[self.count] = self.pose_real
+        self.orientation_record[self.count] = self.orientation_real
         self.input_record[self.count] = self.u.copy()
         self.count += 1
 
@@ -136,10 +141,52 @@ class RobotariumEnvironment(object):
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
         print("time:", time_stamp)
         file_n = 'quads_robotarium_'+ time_stamp +'.pckl'
-        arrays = [self.time_record, self.x_record, self.orientation, self.input_record]
+        arrays = [self.time_record, self.x_record, self.orientation_real, self.input_record]
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file)
 
+    def Safe_Barrier_3D(self, x):
+        '''Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
+        A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh. '''
+        Kb = self.Kb
+        u = self.u.copy()
+        N = len(u)
+        zscale = 3
+        gamma = 5e-1
+        Ds = 0.28
+        H = 2 * np.eye(3 * N)
+        f = -2 * np.reshape(np.hstack(self.u.values()), (3 * N, 1))
+        A = np.empty((0, 3 * N))
+        b = np.empty((0, 1))
+        for i in range(N - 1):
+            for j in range(i + 1, N):
+                pr = np.multiply(x[i][0, :] - x[j][0, :], np.array([1, 1, 1.0 / zscale]))
+                prd = np.multiply(x[i][1, :] - x[j][1, :], np.array([1, 1, 1.0 / zscale]))
+                prdd = np.multiply(x[i][2, :] - x[j][2, :], np.array([1, 1, 1.0 / zscale]))
+                prddd = np.multiply(x[i][3, :] - x[j][3, :], np.array([1, 1, 1.0 / zscale]))
+                h = np.linalg.norm(pr, 4) ** 4 - Ds ** 4
+                hd = sum(4 * pr ** 3 * prd)
+                hdd = sum(12 * pr ** 2 * prd ** 2 + 4 * pr ** 3 * prdd)
+                hddd  = sum(24*pr*prd**3 + 36*pr**2*prd*prdd + 4*pr**3*prddd)
+                # Lfh = sum(24*pr*prd**3 + 36*pr ** 2*prd*prdd)
+                Lfh = sum(24*pr*prd**3 + 36*pr**2*prd*prdd + 4*pr**3*prddd)
+                Lgh = 4 * pr ** 3 * np.array([1, 1, 1.0 / zscale])
+                Anew = np.zeros((3 * N,))
+                Anew[3 * i:3 * i + 3] = - Lgh
+                Anew[3 * j:3 * j + 3] = Lgh
+                bnew = gamma * np.dot(Kb, [h, hd, hdd, hddd]) + Lfh
+                A = np.vstack([A, Anew])
+                b = np.vstack([b, bnew])
+
+        G = np.vstack([A, -np.eye(3 * N), np.eye(3 * N)])
+        amax = 1e4
+        h = np.vstack([b, amax * np.ones((3 * N, 1)), amax * np.ones((3 * N, 1))])
+        sol = solvers.qp(matrix(H), matrix(f), matrix(G), matrix(h), matrix(np.empty((0, 3 * N))),
+                         matrix(np.empty((0, 1))))
+        x = sol['x']
+        for i in range(N):
+            u[i] = np.reshape(x[3 * i:3 * i + 3], (1, 3))
+        return u
 
     def plot_robotarium(self):
         fig = plt.figure()
