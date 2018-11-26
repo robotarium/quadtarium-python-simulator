@@ -36,7 +36,7 @@ def delta_func(q_goal, q):
     return u
 
 
-def projection_controller(p_now, p_future, max_vel=0.8, dt=0.02):
+def projection_controller(p_now, p_future, max_vel=0.6, dt=0.02):
     p_des = np.zeros((4, 3))
     vel = delta_func(p_future, p_now[0, :])
     #print("vel: ", vel)

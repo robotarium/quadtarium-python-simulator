@@ -70,7 +70,10 @@ class RobotariumEnvironment(object):
     def hover_quads_at_initial_poses(self, takeoff_time=10.0):
         reached_des_flag = np.zeros((self.number_of_agents))
         t0 = time.time()
-
+        self.desired_poses = np.zeros((self.number_of_agents, 3))
+        print("num of agents:", self.number_of_agents)
+        print("poses: ", self.poses)
+        print("desired poses: ", self.desired_poses)
         for i in range(self.number_of_agents):
             if type(self.initial_poses) == np.ndarray:
                 self.desired_poses[i] = self.initial_poses[i]
@@ -145,17 +148,21 @@ class RobotariumEnvironment(object):
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file)
 
-    def Safe_Barrier_3D(self, x):
+    def Safe_Barrier_3D(self, x, u=None, accept_u=True):
         '''Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
         A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh. '''
         Kb = self.Kb
-        u = self.u.copy()
+        if accept_u is True:
+            u = u.copy()
+        else:
+            u = self.u
         N = len(u)
         zscale = 3
         gamma = 5e-1
-        Ds = 0.28
+        Ds = 0.3
         H = 2 * np.eye(3 * N)
-        f = -2 * np.reshape(np.hstack(self.u.values()), (3 * N, 1))
+        print("u :", u)
+        f = -2 * np.reshape(np.hstack(u.values()), (3 * N, 1))
         A = np.empty((0, 3 * N))
         b = np.empty((0, 1))
         for i in range(N - 1):
@@ -181,8 +188,7 @@ class RobotariumEnvironment(object):
         G = np.vstack([A, -np.eye(3 * N), np.eye(3 * N)])
         amax = 1e4
         h = np.vstack([b, amax * np.ones((3 * N, 1)), amax * np.ones((3 * N, 1))])
-        sol = solvers.qp(matrix(H), matrix(f), matrix(G), matrix(h), matrix(np.empty((0, 3 * N))),
-                         matrix(np.empty((0, 1))))
+        sol = solvers.qp(matrix(H), matrix(f), matrix(G), matrix(h))
         x = sol['x']
         for i in range(N):
             u[i] = np.reshape(x[3 * i:3 * i + 3], (1, 3))

@@ -12,11 +12,15 @@ def dist_between_nodes(node1_val, node2_val):
     dist = np.sqrt(sum_v)
     return dist
 
-def spline_interpolation(points, total_time=5):
+def spline_interpolation(points, time_interval=None, total_time=20):
     # points (n x 3) array x, y, z points  #3 points
     # have at least 4 initial points
     print('spline interpolationl')
     desired_points = 4
+    if time_interval is not None and time_interval.shape[0] == points.shape[0]:
+        total_time = time_interval[-1]
+    else:
+        time_interval = np.linspace(0, total_time, points.shape[0])  # 3 times
     if points.shape[0] == 2:
         # print("shape is 2")
         new_points = np.array([[]])
@@ -44,11 +48,10 @@ def spline_interpolation(points, total_time=5):
         points = new_points
 
     print("points: ", points)
+    print("time interval: ", time_interval)
     degree = 5
     num_of_polys = points.shape[
                        0] - 1  # 3
-    time_interval = np.linspace(0, total_time, points.shape[
-        0])  # 3 times
     a_matrix = np.zeros(((degree + 1) * num_of_polys, (
                 degree + 1) * num_of_polys))  # 18 x 18
     num_of_coeffs = int(float(a_matrix.shape[1]) / float(
@@ -162,7 +165,7 @@ def extract_points(coefficients_info, dt=0.02):
     coefficients, num_of_coeffs, time_interval = coefficients_info
     t = 0
     index = 0
-    point = np.zeros((5, 3))
+    point = np.zeros((4, 3))
     points = np.array([])
     for time in range(1, time_interval.shape[0]):
         curr_coeffs = coefficients[index * num_of_coeffs:num_of_coeffs * (index + 1)]
@@ -181,7 +184,7 @@ def extract_points(coefficients_info, dt=0.02):
                 point[2, dim] = 20 * dim_coeffs[0] * t ** 3 + 12 * dim_coeffs[1] * t ** 2 + 6 * dim_coeffs[2] * t + 2 * \
                                 dim_coeffs[3]
                 point[3, dim] = 60 * dim_coeffs[0] * t ** 2 + 24 * dim_coeffs[1] * t + 6 * dim_coeffs[2]
-                point[4, dim] = 120 * dim_coeffs[0] * t + 24 * dim_coeffs[1]
+                # point[4, dim] = 120 * dim_coeffs[0] * t + 24 * dim_coeffs[1]
             if points.shape[0] == 0:
                 points = np.expand_dims(point, axis=0)
             else:
