@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     i = 0
     time_lim = 500
-
+    robotarium.initial_poses = np.array([])
     point_spline_for_quads = dict()
     index_update = dict()
     init_pose = np.zeros((robotarium.number_of_agents, 3))

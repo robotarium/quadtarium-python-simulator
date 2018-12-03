@@ -1,4 +1,4 @@
-from utilities.robotarium_communication_interface import  RobotariumCommunication
+#!/usr/bin/env python
 import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,6 +7,7 @@ from control import acker
 from cvxopt import matrix, solvers
 import time
 import pickle
+from utilities.robotarium_communication_interface import RobotariumCommunication
 from utilities.actuation import invert_diff_flat_output, projection_controller
 
 TIMEOUT_FLAG = False
