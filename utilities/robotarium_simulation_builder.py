@@ -11,12 +11,12 @@ from utilities.robotarium_communication_interface import RobotariumCommunication
 from utilities.actuation import invert_diff_flat_output, projection_controller
 
 TIMEOUT_FLAG = False
-TIMEOUT_TIME = 300
+TIMEOUT_TIME = 30
 
 class RobotariumEnvironment(object):
     def __init__(self, save_data=True, barriers=True):
         self.number_of_agents = rand.randint(3, 10)
-        self.initial_poses = None
+        self.initial_poses = np.array([])
         self.poses = np.array([])
         self.desired_poses = np.zeros((self.number_of_agents, 3))
         self.crazyflie_objects = {}
@@ -26,7 +26,7 @@ class RobotariumEnvironment(object):
         self.u = dict()
         self.orientation_real = dict()
         self.pose_real = dict()
-        self.dt = 0.02
+        self.dt = 0.03
         self.count = 0
         self.time_record = dict()
         self.x_record = dict()
@@ -34,7 +34,7 @@ class RobotariumEnvironment(object):
         self.orientation_record = dict()
         self.AA = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
         self.bb = np.array([[0], [0], [0], [1]])
-        self.Kb = np.asarray(acker(self.AA, self.bb, [-10.2, -10.4, -10.6, -10.8]))
+        self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))
         self.robotarium_simulator_plot = None
         self.barriers = barriers
         self.save_flag = save_data
@@ -62,21 +62,26 @@ class RobotariumEnvironment(object):
             self.number_of_agents = rand.randint(0, 10)
 
         self.robotarium_simulator_plot = self.plot_robotarium()
-        for i in range(self.number_of_agents):
-            self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, index=i)
+        if len(self.initial_poses) == 0:
+            for i in range(self.number_of_agents):
+                self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, index=i)
+                self.poses = self.get_quadcopter_poses()
+                self.hover_quads_at_initial_poses()
+        else:
+            for i in range(self.number_of_agents):
+                self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, self.initial_poses[i], index=i)
+                self.poses = self.initial_poses
+                self.x_state[i] = np.zeros((4, 3))
+                self.x_state[i][0] = self.poses[i]
 
-        self.poses = self.get_quadcopter_poses()
-        self.hover_quads_at_initial_poses()
 
     def hover_quads_at_initial_poses(self, takeoff_time=10.0):
+        print("HOVER QUADS")
         reached_des_flag = np.zeros((self.number_of_agents))
         t0 = time.time()
         self.desired_poses = np.zeros((self.number_of_agents, 3))
-        print("num of agents:", self.number_of_agents)
-        print("poses: ", self.poses)
-        print("desired poses: ", self.desired_poses)
         for i in range(self.number_of_agents):
-            if type(self.initial_poses) == np.ndarray:
+            if len(self.initial_poses) > 0:
                 self.desired_poses[i] = self.initial_poses[i]
             else:
                 self.desired_poses[i] = np.array([self.poses[i][0], self.poses[i][1], -0.6])
@@ -87,10 +92,10 @@ class RobotariumEnvironment(object):
         while np.sum(reached_des_flag) < self.number_of_agents:
             t = time.time()
             s = min((t - t0) / takeoff_time, 1.0)
-            print('HOVER')
+            #print('HOVER')
             for i in range(self.number_of_agents):
                 reached_des_flag[i], self.poses[i] = self.crazyflie_objects[i].hover_bot(self.desired_poses[i], s, self.robotarium_simulator_plot)
-            plt.pause(0.02)
+            plt.pause(0.001)
 
         for i in range(self.number_of_agents):
             self.x_state[i] = np.zeros((4, 3))
@@ -108,14 +113,19 @@ class RobotariumEnvironment(object):
         # update until desired poses are acquired and return flag for each quad that you are done
         # print("update points")
         for i in range(self.number_of_agents):
-            print("goal point: ", self.desired_poses[i])
-            print("current: ", self.x_state[i][0])
+            #print("goal point: ", self.desired_poses[i])
+            # print("current: ", self.x_state[i])
             desired_point = projection_controller(self.x_state[i], self.desired_poses[i])
-            print("desired point: {0} for robot: {1} \n".format(desired_point, i))
+            #print("desired point: {0} for robot: {1} \n".format(desired_point, i))
             self.u[i] = desired_point[3, :] - np.dot(self.Kb, self.x_state[i] - desired_point)
-            print("u: ",self.u[i])
+            # print("u: ",self.u[i])
+            # print("norm of u:", np.linalg.norm(self.u[i]))
+            if np.linalg.norm(self.u[i]) > 1e4:
+                self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
+
         if self.barriers == True:
-            self.u = self.Safe_Barrier_3D(self.x_state)
+            self.u = self.Safe_Barrier_3D(self.x_state, self.u)
+
         for i in range(self.number_of_agents):
             self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
             self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
@@ -138,12 +148,12 @@ class RobotariumEnvironment(object):
             return TIMEOUT_FLAG
 
     def run_time(self):
-        time_now = self.time - time.time()
+        time_now = time.time() - self.time
         return time_now
 
     def save_data(self):
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
-        print("time:", time_stamp)
+        #print("time:", time_stamp)
         file_n = 'quads_robotarium_'+ time_stamp +'.pckl'
         arrays = [self.time_record, self.x_record, self.orientation_real, self.input_record]
         with open(file_n, 'wb') as file:
@@ -162,7 +172,7 @@ class RobotariumEnvironment(object):
         gamma = 5e-1
         Ds = 0.3
         H = 2 * np.eye(3 * N)
-        print("u :", u)
+        # print("u :", u)
         f = -2 * np.reshape(np.hstack(u.values()), (3 * N, 1))
         A = np.empty((0, 3 * N))
         b = np.empty((0, 1))
@@ -228,8 +238,8 @@ class QuadcopterObject(RobotariumCommunication):
 
     def hover_bot(self, hover_point, s, sim_env):
         next_pos = np.zeros((3))
-        print("pose" , self.position)
-        print("hove point: ", hover_point)
+        #print("pose" , self.position)
+        # print("hove point: ", hover_point)
         dx = hover_point[0] - self.position[0]
         dy = hover_point[1] - self.position[1]
         dz = hover_point[2] - self.position[2]

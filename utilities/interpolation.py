@@ -1,7 +1,7 @@
 import numpy as np
 from math import atan2, sqrt
 import math
-MAX_VELOCITY = 0.3
+MAX_VELOCITY = 0.2
 TIME = 0.02
 
 def dist_between_nodes(node1_val, node2_val):
@@ -12,43 +12,42 @@ def dist_between_nodes(node1_val, node2_val):
     dist = np.sqrt(sum_v)
     return dist
 
-def spline_interpolation(points, time_interval=None, total_time=20):
+def spline_interpolation(points, time_interval = None, total_time=None):
     # points (n x 3) array x, y, z points  #3 points
     # have at least 4 initial points
-    print('spline interpolationl')
+    # print('spline interpolation')
     desired_points = 4
-    if time_interval is not None and time_interval.shape[0] == points.shape[0]:
-        total_time = time_interval[-1]
-    else:
-        time_interval = np.linspace(0, total_time, points.shape[0])  # 3 times
+    #if time_interval is not None and time_interval.shape[0] == points.shape[0]:
+    #    total_time = time_interval[-1]
+    #else:
+    #    time_interval = np.linspace(0, total_time, points.shape[0])  # 3 times
     if points.shape[0] == 2:
+        # print("points before:", points)
         # print("shape is 2")
         new_points = np.array([[]])
         for i in range(desired_points):
             if i == 0:
                 point = [points[0]]
                 new_points = point
-            elif i == desired_points:
+            elif i == desired_points - 1:
                 point = [points[1]]
                 new_points = np.append(new_points, point, axis=0)
             else:
                 if i == 1:
-                    mid_point = calculate_midpoint(points[i - 1], points[i])
+                    mid_point = calculate_midpoint(points[0], points[1])
                 else:
                     mid_point = calculate_midpoint(new_points[i - 1], points[1])
                 new_points = np.append(new_points, [mid_point], axis=0)
-
-        dist = np.linalg.norm((points[0] - points[1]), 2)
-        velocity = float(dist) / total_time
-        # print("velocity before: ", velocity)
-        if velocity > MAX_VELOCITY:
-            total_time = dist / MAX_VELOCITY
-        velocity = float(dist) / total_time
-        # print("velocity: ", velocity)
         points = new_points
+    dist = np.linalg.norm((points[0] - points[1]), 2)
 
-    print("points: ", points)
-    print("time interval: ", time_interval)
+    if total_time is None and time_interval is None:
+        total_time = dist / MAX_VELOCITY
+        velocity = float(dist) / total_time
+        time_interval = np.linspace(0, total_time, points.shape[0])
+    elif time_interval is None:
+        time_interval = np.linspace(0, total_time, points.shape[0])
+
     degree = 5
     num_of_polys = points.shape[
                        0] - 1  # 3
@@ -66,7 +65,6 @@ def spline_interpolation(points, time_interval=None, total_time=20):
         for poly in range(num_of_polys):
             if poly == 0:
                 poly_index_0 = poly * (degree + 1)
-                # print("poly index 0: ", poly_index_0)
                 a_matrix[poly_index_0, 0:num_of_coeffs] = np.array(
                     [t[i] ** 5, t[i] ** 4, t[i] ** 3, t[i] ** 2, t[i], 1])
 
@@ -198,19 +196,14 @@ def extract_points(coefficients_info, dt=0.02):
 
 def parameterize_time_waypoint_generator(phat, x, s, dt):
     ks = 10
-    sd = math.exp(-ks * dist_between_nodes(phat[0, :], x[0,
-                                                       :]) ** 2)  # paramed time dynamics
+    sd = math.exp(-ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2)  # paramed time dynamics
     pd = phat[1, :] * sd
-    sdd = -ks * math.exp(-ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * 2 * np.dot(phat[0, :] - x[0, :],
-                                                                                          pd - x[1, :])
+    sdd = -ks * math.exp(-ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * 2 * np.dot(phat[0, :] - x[0, :], pd - x[1, :])
     pdd = phat[2, :] * sd ** 2 + phat[1, :] * sdd
     sddd = ks * ks * math.exp(-ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * 4 * (
         np.dot(phat[0, :] - x[0, :], pd - x[1, :])) ** 2 - ks * 2 * math.exp(
-        -ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * (np.dot(pd - x[1, :], pd - x[1, :]) +
-                                                               np.dot(phat[0, :] - x[0, :],
-                                                                      pdd - x[2, :]) * dist_between_nodes(pdd,
-                                                                                                          x[2, :]) +
-                                                               np.dot(phat[0, :] - x[0, :], pd - x[1, :]))
+        -ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * (np.dot(pd - x[1, :], pd - x[1, :]) + np.dot(phat[0, :] - x[0, :],
+                                                                      pdd - x[2, :]) * dist_between_nodes(pdd, x[2, :]) + np.dot(phat[0, :] - x[0, :], pd - x[1, :]))
     pddd = phat[3, :] * sd ** 3 + 3 * phat[2, :] * sd * sdd + phat[1, :] * sddd
     phatnew = np.vstack([phat[0, :], pd, pdd, pddd])
     s = s + sd * dt

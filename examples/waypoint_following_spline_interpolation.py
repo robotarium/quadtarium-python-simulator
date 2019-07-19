@@ -35,40 +35,37 @@ if __name__ == "__main__":
                          [[1.1, 1.2, -1.2], [0.2, 0.5, -0.8], [-0.1, -0.3, -0.6],[-0.7, 0.3, -0.7]]])
 
     i = 0
-    time_lim = 500
+    SPLINE_COUNT = 300
     robotarium.initial_poses = np.array([])
     point_spline_for_quads = dict()
     index_update = dict()
     init_pose = np.zeros((robotarium.number_of_agents, 3))
     for i in range(robotarium.number_of_agents):
        points = np.stack((x_desired[i]))
-       spline_coeffs_for_quad = spline_interpolation(points)
+       spline_coeffs_for_quad = spline_interpolation(points, total_time=5)
        spline_for_quads = extract_points(spline_coeffs_for_quad)
        point_spline_for_quads[i] = spline_for_quads
-       print("spline: ", spline_for_quads)
        init_pose[i] = point_spline_for_quads[i][0][0, :]
        index_update[i] = 0
-    #robotarium.initial_poses = np.array([[-1.0, 1.0, -0.8],
-    #                                     [-1.0, -0.3, -0.5]])
 
     robotarium.initial_poses = init_pose
 
     robotarium.build()
 
-    point_update  = np.zeros((robotarium.number_of_agents, 3))
-    while i < time_lim:
+    point_update = np.zeros((robotarium.number_of_agents, 3))
+    all_splines_satisfied = 0
+
+    while i < SPLINE_COUNT:
         # retrieve quadcopter poses (numpy array, n x m x 3) where n is the quadcopter index
-        #x = robotarium.get_quadcopter_poses()
 
         # Insert your code here!!
         for j in range(robotarium.number_of_agents):
-            #print("agent: ", j)
-            #print("desired:", x_desired[j])
             desired_point = point_spline_for_quads[j][index_update[j]]
             if index_update[j] < point_spline_for_quads[j].shape[0] - 1:
                 index_update[j] += 1
             else:
                 index_update[j] = point_spline_for_quads[j].shape[0] - 1
+                all_splines_satisfied += 1
             point_update[j] = desired_point[0, :]
 
 
@@ -77,12 +74,7 @@ if __name__ == "__main__":
 
         # send pose commands to robotarium
         robotarium.update_poses()
-        print("poses: ", robotarium.poses)
-
         i += 1
-        # also users can self limit runtime of program
-        if robotarium.run_time() > 60:
-            TIMEOUT = True
 
 
 
