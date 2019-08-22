@@ -7,8 +7,8 @@ from control import acker
 from cvxopt import matrix, solvers
 import time
 import pickle
-from utilities.robotarium_communication_interface import RobotariumCommunication
-from utilities.actuation import invert_diff_flat_output, projection_controller
+from utilities_sim.robotarium_communication_interface import RobotariumCommunication
+from utilities_sim.actuation import invert_diff_flat_output, projection_controller
 
 TIMEOUT_FLAG = False
 TIMEOUT_TIME = 30

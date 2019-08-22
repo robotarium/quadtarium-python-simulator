@@ -1,6 +1,6 @@
 import numpy as np
-from utilities.robotarium_simulation_builder import RobotariumEnvironment
-from utilities.interpolation import spline_interpolation, extract_points
+from utilities_exp.robotarium_simulation_builder import RobotariumEnvironment
+from utilities_exp.interpolation import spline_interpolation, extract_points
 
 if __name__ == "__main__":
     print("leader follower")

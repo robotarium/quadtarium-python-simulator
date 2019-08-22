@@ -4,14 +4,16 @@
 # 10/14/18
 # This file provides an example of how to send commands to the Robotarium for moving a number of quadcopters from one pose
 # to another.
-from utilities.robotarium_simulation_builder import RobotariumEnvironment
+import sys
+import os
 import numpy as np
+from utilities_sim import robotarium_simulation_builder
 
 TIMEOUT = False
 
 if __name__ == "__main__":
     # creates robotarium object, indictate if user would like to save data
-    robotarium = RobotariumEnvironment(save_data=True)
+    robotarium = robotarium_simulation_builder.RobotariumEnvironment(save_data=True)
 
     # robotarium object sets a random number of agents to be created
 
