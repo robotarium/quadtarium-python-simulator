@@ -9,6 +9,8 @@ import os
 import numpy as np
 from utilities_sim import robotarium_simulation_builder
 
+
+
 TIMEOUT = False
 
 if __name__ == "__main__":
