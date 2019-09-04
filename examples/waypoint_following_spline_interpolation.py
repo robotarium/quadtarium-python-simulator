@@ -4,8 +4,8 @@
 # 10/14/18
 # This file provides an example of how to send commands to the Robotarium for moving a number of quadcopters from one pose
 # to another.
-from utilities_exp.robotarium_simulation_builder import RobotariumEnvironment
-from utilities_exp.interpolation import spline_interpolation, extract_points
+from utilities_sim.robotarium_simulation_builder import RobotariumEnvironment
+from utilities_sim.interpolation import spline_interpolation, extract_points
 import numpy as np
 
 TIMEOUT = False
