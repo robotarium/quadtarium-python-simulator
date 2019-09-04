@@ -1,6 +1,6 @@
 # !/usr/bin/env python
-from utilities.robotarium_simulation_builder import RobotariumEnvironment
-from utilities.interpolation import spline_interpolation, extract_points, parameterize_time_waypoint_generator
+from utilities_exp.robotarium_simulation_builder import RobotariumEnvironment
+from utilities_exp.interpolation import spline_interpolation, extract_points, parameterize_time_waypoint_generator
 import numpy as np
 from math import cos, sin
 from control import acker

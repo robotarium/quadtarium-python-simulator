@@ -1,5 +1,5 @@
 import numpy as np
-from utilities import quadcopter_plot
+from utilities_sim import quadcopter_plot
 # plots the quadcopter
 
 class RobotariumCommunication(object):
