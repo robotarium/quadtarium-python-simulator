@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set
     robotarium.build()
 
-    x_desired = np.array([[0.8, 1.0, -1.2]])
+    vels = np.array([[0.01, 0.01, 0]])
 
     i = 0
     COUNT = 1000
@@ -38,7 +38,9 @@ if __name__ == "__main__":
         # Insert your code here!!
 
         # Set desired pose
-        robotarium.set_desired_poses(x_desired)
+
+        #robotarium.set_desired_setposes(x_desired)
+        robotarium.set_desired_vels(vels)
         # send pose commands to robotarium
         robotarium.update_poses()
         i +=1

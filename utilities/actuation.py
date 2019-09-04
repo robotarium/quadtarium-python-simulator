@@ -3,11 +3,15 @@
 from math import atan2, sqrt
 import numpy as np
 import math
+from control import acker
 
 MAX_VEL = 0.5
 MAX_ACC = 0.05
 MAX_J = 0.005
 T = 0.02
+
+z_2 = np.zeros((1, 3))
+z_3 = np.zeros((1, 3))
 
 def invert_diff_flat_output(x, thrust_hover=0):
 
@@ -84,6 +88,23 @@ def projection_controller(p_now, p_future):
     #print("p after: ", p_des)
 
     return p_des
+
+def vel_back_step(x_state, vel_prev, vel_des, vel_des_prev, dt=0.02):
+    v = x_state[1, :]
+    dv_dt = (v - vel_prev) / dt
+    dv_dt_2 = dv_dt*dv_dt
+
+    d_ves_dt = (vel_des - vel_des_prev) / dt
+    d_ves_dt_2 = d_ves_dt*d_ves_dt
+
+    k_1 = np.array([6, 6, 6])
+    print("dv_dt: ", dv_dt)
+    print("dves_dt: ", d_ves_dt)
+    u_3 = -k_1*(v-vel_des)*dv_dt_2 - k_1*(v-vel_des)*d_ves_dt_2
+
+    print("u3: ", u_3)
+    return u_3
+
 
 
 # if __name__ == "__main__":

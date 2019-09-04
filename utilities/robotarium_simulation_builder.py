@@ -8,7 +8,7 @@ from cvxopt import matrix, solvers
 import time
 import pickle
 from utilities.robotarium_communication_interface import RobotariumCommunication
-from utilities.actuation import invert_diff_flat_output, projection_controller
+from utilities.actuation import invert_diff_flat_output, vel_back_step
 
 TIMEOUT_FLAG = False
 TIMEOUT_TIME = 30
@@ -19,9 +19,12 @@ class RobotariumEnvironment(object):
         self.initial_poses = np.array([])
         self.poses = np.array([])
         self.desired_poses = np.zeros((self.number_of_agents, 3))
+        self.desired_vels = np.zeros((self.number_of_agents, 3))
         self.crazyflie_objects = {}
         self.time = time.time()
         self.x_state = dict()
+        self.vel_prev = dict()
+        self.des_vel_prev = dict()
         self.xd = dict()
         self.u = dict()
         self.orientation_real = dict()
@@ -51,6 +54,9 @@ class RobotariumEnvironment(object):
         # sets desired goal points for all quadcopters
         self.desired_poses = poses
 
+    def set_desired_vels(self, vels):
+        self.desired_vels = vels
+
     def build(self):
         # builds robotarium simulator
         # creates quadcopter objects for each quadcopter and plots each quadcopter
@@ -67,12 +73,21 @@ class RobotariumEnvironment(object):
                 self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, index=i)
                 self.poses = self.get_quadcopter_poses()
                 self.hover_quads_at_initial_poses()
+                self.vel_prev[i] = np.zeros((1, 3))
+                self.des_vel_prev[i] = np.zeros((1, 3))
+
+
+
         else:
             for i in range(self.number_of_agents):
                 self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, self.initial_poses[i], index=i)
                 self.poses = self.initial_poses
                 self.x_state[i] = np.zeros((4, 3))
                 self.x_state[i][0] = self.poses[i]
+                self.vel_prev[i] = np.zeros((1, 3))
+                self.des_vel_prev[i] = np.zeros((1, 3))
+
+
 
 
     def hover_quads_at_initial_poses(self, takeoff_time=10.0):
@@ -114,11 +129,12 @@ class RobotariumEnvironment(object):
         # print("update points")
         for i in range(self.number_of_agents):
             #print("goal point: ", self.desired_poses[i])
-            # print("current: ", self.x_state[i])
-            desired_point = projection_controller(self.x_state[i], self.desired_poses[i])
+            print("current: ", self.x_state[i])
+            desired_point = vel_back_step(self.x_state[i], self.vel_prev[i], self.desired_vels[i], self.des_vel_prev[i])
             #print("desired point: {0} for robot: {1} \n".format(desired_point, i))
-            self.u[i] = desired_point[3, :] - np.dot(self.Kb, self.x_state[i] - desired_point)
-            # print("u: ",self.u[i])
+            #self.u[i] = desired_point[3, :] - np.dot(self.Kb, self.x_state[i] - desired_point)
+            self.u[i] = desired_point
+            print("u: ", self.u[i])
             # print("norm of u:", np.linalg.norm(self.u[i]))
             if np.linalg.norm(self.u[i]) > 1e4:
                 self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
@@ -132,6 +148,8 @@ class RobotariumEnvironment(object):
             self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
             self.poses[i] = self.x_state[i][0, :]
             self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
+            self.vel_prev[i] = self.x_state[i][1, :]
+            self.des_vel_prev[i] = self.desired_vels[i]
         plt.pause(0.02)
         self.time_record[self.count] = str(self.run_time())
         self.x_record[self.count] = self.pose_real
