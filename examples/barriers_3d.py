@@ -1,6 +1,6 @@
 # !/usr/bin/env python
-from utilities_exp.robotarium_simulation_builder import RobotariumEnvironment
-from utilities_exp.interpolation import spline_interpolation, extract_points, parameterize_time_waypoint_generator
+from utilities_sim.robotarium_simulation_builder import RobotariumEnvironment
+from utilities_sim.interpolation import spline_interpolation, extract_points, parameterize_time_waypoint_generator
 import numpy as np
 from math import cos, sin
 from control import acker
@@ -106,7 +106,7 @@ if __name__ == "__main__":
                 x_state[i] = x_state[i] + xd[i]*dt
                 desired_poses[i] = x_state[i][0]
 
-            # print("desired poses: ", desired_poses)
+            #print("desired poses: ", desired_poses)
             # print("current poses: ", robotarium.poses)
             robotarium.set_desired_poses(desired_poses)
             robotarium.update_poses()
@@ -117,8 +117,8 @@ if __name__ == "__main__":
             print("Interrupt Occurred")
             break
     else:
-        print("poses: ", robotarium.poses)
-        print("initi: ", initial_points)
+        #print("poses: ", robotarium.poses)
+        #print("initi: ", initial_points)
         curr_dist = np.linalg.norm(robotarium.poses - initial_points)
         while np.linalg.norm(curr_dist - desired_dist) > 0.05:
             if flag is False:

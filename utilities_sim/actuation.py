@@ -46,11 +46,15 @@ def delta_func(q_goal, q):
 
 
 def gen_splines(p_now, p_future):
-    print("shape p_now: ", p_now)
-    print("shape p_future: ", p_future)
+    #p_now = np.array([ 1.,   0.,  -0.8])
+    #p_future = np.array([ 0.9991086,   0.00131264, -0.8       ])
+    #print(" p_now: ", p_now)
+    #print("p_future: ", p_future)
     points = np.stack((p_now, p_future), axis=0)
     traj_coeffs = spline_interpolation(points)
+    #print("time: ", traj_coeffs[2])
     traj = extract_points(traj_coeffs)
+    #print("trajectory:", traj)
     return traj
 
 def vel_back_step(x_state, vel_prev, vel_des, vel_des_prev, dt=0.02):

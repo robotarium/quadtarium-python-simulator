@@ -1,9 +1,9 @@
-#!/usr/bin/env pytho
+#!/usr/bin/env python
 import numpy as np
 from math import atan2, sqrt
 import math
 MAX_VELOCITY = 0.2
-TIME = 0.02
+TIME = 1
 
 def dist_between_nodes(node1_val, node2_val):
     sum_v = 0
@@ -16,15 +16,15 @@ def dist_between_nodes(node1_val, node2_val):
 def spline_interpolation(points, time_interval = None, total_time=None):
     # points (n x 3) array x, y, z points  #3 points
     # have at least 4 initial points
-    print('spline interpolation')
+    #print('spline interpolation')
     desired_points = 4
     #if time_interval is not None and time_interval.shape[0] == points.shape[0]:
     #    total_time = time_interval[-1]
     #else:
     #    time_interval = np.linspace(0, total_time, points.shape[0])  # 3 times
-    print("points before:", points)
+    #print("points before:", points)
     if points.shape[0] == 2:
-        print("shape is 2")
+        #print("shape is 2")
         new_points = np.array([[]])
         for i in range(desired_points):
             if i == 0:
@@ -45,7 +45,10 @@ def spline_interpolation(points, time_interval = None, total_time=None):
     if total_time is None and time_interval is None:
         velocity = float(dist) / TIME
         total_time = dist / velocity
+        #print("time; ", total_time)
+        #print("vel: ", velocity)
         if  velocity > MAX_VELOCITY:
+            #print("vel too high: ", velocity)
             total_time = dist / MAX_VELOCITY
         time_interval = np.linspace(0, total_time, points.shape[0])
     elif time_interval is None:

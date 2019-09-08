@@ -145,8 +145,8 @@ class RobotariumEnvironment(object):
                 self.u = self.Safe_Barrier_3D(self.x_state, self.u)
 
             for i in range(self.number_of_agents):
-                print("u shape: ", self.u[i].shape)
-                print("b: ", self.bb.shape)
+                #print("u shape: ", self.u[i].shape)
+                #print("b: ", self.bb.shape)
                 self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
                 self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
                 self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
@@ -164,54 +164,69 @@ class RobotariumEnvironment(object):
             desired_trajs = dict()
             index = dict()
             end_points = np.array([[]])
+            N = 0
             for i in range(self.number_of_agents):
+                desired_trajs[i] = np.zeros((4, 3))
                 #print("goal point: ", self.desired_poses[i])
                 #print("current: ", self.x_state[i])
-                desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
-                if i == 0:
-                    end_points = desired_trajs[i][-1][0, :]
+                if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:
+                    desired_trajs[i][0, :] = self.desired_poses[i]
+                    desired_trajs[i] = np.stack((desired_trajs[i], desired_trajs[i]),axis=0)
                 else:
-                    end_points = np.append(end_points, desired_trajs[i][-1][0, :], axis=0)
+                    desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
+                #print("des points; ", desired_trajs[i])
+                if i == 0:
+                    end_points = np.array([desired_trajs[i][-1][0, :]])
+                    #print("end: ", end_points)
+                else:
+                    #print("end points: ", end_points.shape)
+                    end_points = np.append(end_points, np.array([desired_trajs[i][-1][0, :]]), axis=0)
                 index[i] = 0
+                N += desired_trajs[i].shape[0]
 
                 #print("des traj: ", desired_trajs[i][index[i]])
+            #print("all end point: ", end_points)
+            #print("N: ", N)
+            index_sum = 0
 
-            while np.linalg.norm((self.poses - end_points)) > 0.05:
-                for i in range(self.number_of_agents):
-                    if index[i] < desired_trajs[i].shape[0]:
-                        self.u[i] = desired_trajs[i][index[i]][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][index[i]])
-                    else:
-                        self.u[i] = desired_trajs[i][-1][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][-1])
+            #while index_sum < N:
+           # print("N: ", N)
+            index_sum = 0
+            #print("diff: ", np.linalg.norm((self.poses - end_points)))
+            for i in range(self.number_of_agents):
+                #if index[i] < desired_trajs[i].shape[0]:
+                #print("input u: ", desired_trajs[i][index[i]][3, :])
+                self.u[i] = desired_trajs[i][index[i]][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][index[i]])
+                #else:
+                #    self.u[i] = desired_trajs[i][-1][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][-1])
+                #
+                #print("u: ", self.u[i])
+                # print("norm of u:", np.linalg.norm(self.u[i]))
+                if np.linalg.norm(self.u[i]) > 1e4:
+                    self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
+                #index[i] += 1
+                #index_sum += index[i]
+                #print("sum :", index_sum)
 
-                    #print("u: ", self.u[i])
-                    # print("norm of u:", np.linalg.norm(self.u[i]))
-                    if np.linalg.norm(self.u[i]) > 1e4:
-                        self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
-                    index[i] += 1
+            if self.barriers == True:
+                self.u = self.Safe_Barrier_3D(self.x_state, self.u)
 
-                if self.barriers == True:
-                    self.u = self.Safe_Barrier_3D(self.x_state, self.u)
-
-                for i in range(self.number_of_agents):
-                    #print("u shape: ", self.u[i].shape)
-                    #print("b: ", self.bb.shape)
-                    self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
-                    self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
-                    self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
-                    self.poses[i] = self.x_state[i][0, :]
-                    self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
-                    self.vel_prev[i] = self.x_state[i][1, :]
-                    self.des_vel_prev[i] = self.desired_vels[i]
-                plt.pause(0.02)
-                self.time_record[self.count] = str(self.run_time())
-                self.x_record[self.count] = self.pose_real
-                self.orientation_record[self.count] = self.orientation_real
-                self.input_record[self.count] = self.u.copy()
-                self.count += 1
-
-
-
-
+            for i in range(self.number_of_agents):
+                #print("u shape: ", self.u[i].shape)
+                #print("b: ", self.bb.shape)
+                self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
+                self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
+                self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
+                self.poses[i] = self.x_state[i][0, :]
+                self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
+               # self.vel_prev[i] = self.x_state[i][1, :]
+                #self.des_vel_prev[i] = self.desired_vels[i]
+            plt.pause(0.02)
+            self.time_record[self.count] = str(self.run_time())
+            self.x_record[self.count] = self.pose_real
+            self.orientation_record[self.count] = self.orientation_real
+            self.input_record[self.count] = self.u.copy()
+            self.count += 1
 
 
 
