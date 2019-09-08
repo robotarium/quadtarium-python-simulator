@@ -141,7 +141,7 @@ class RobotariumEnvironment(object):
                 if np.linalg.norm(self.u[i]) > 1e4:
                     self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
 
-            if self.barriers == True:
+            if self.barriers is True:
                 self.u = self.Safe_Barrier_3D(self.x_state, self.u)
 
             for i in range(self.number_of_agents):
@@ -164,7 +164,7 @@ class RobotariumEnvironment(object):
             desired_trajs = dict()
             index = dict()
             end_points = np.array([[]])
-            N = 0
+            #N = 0
             for i in range(self.number_of_agents):
                 desired_trajs[i] = np.zeros((4, 3))
                 #print("goal point: ", self.desired_poses[i])
@@ -182,7 +182,7 @@ class RobotariumEnvironment(object):
                     #print("end points: ", end_points.shape)
                     end_points = np.append(end_points, np.array([desired_trajs[i][-1][0, :]]), axis=0)
                 index[i] = 0
-                N += desired_trajs[i].shape[0]
+                #N += desired_trajs[i].shape[0]
 
                 #print("des traj: ", desired_trajs[i][index[i]])
             #print("all end point: ", end_points)

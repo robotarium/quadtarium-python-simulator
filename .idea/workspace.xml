@@ -2,13 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2ac22702-153e-4bd7-97e8-72018630f264" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/barriers_3d.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/barriers_3d.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utilities_sim/actuation.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities_sim/actuation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utilities_sim/interpolation.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities_sim/interpolation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/go_to_point.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/go_to_point.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -123,48 +121,41 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file leaf-file-name="go_to_point.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/examples/go_to_point.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="864">
-              <caret line="48" column="20" lean-forward="true" selection-start-line="48" selection-start-column="20" selection-end-line="48" selection-end-column="20" />
+            <state relative-caret-position="597">
+              <caret line="45" column="29" lean-forward="true" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file leaf-file-name="robotarium_simulation_builder.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="652">
-              <caret line="175" column="44" selection-start-line="175" selection-start-column="44" selection-end-line="175" selection-end-column="44" />
-              <folding>
-                <element signature="e#22#43#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-343">
+              <caret line="171" column="25" selection-start-line="171" selection-start-column="25" selection-end-line="171" selection-end-column="25" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file leaf-file-name="actuation.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utilities_sim/actuation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="523">
-              <caret line="55" column="20" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
+            <state relative-caret-position="1035">
+              <caret line="71" selection-start-line="71" selection-end-line="71" />
               <folding>
                 <element signature="e#23#51#0" expanded="true" />
-                <marker date="1567971806192" expanded="true" signature="1253:1426" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file leaf-file-name="interpolation.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/utilities_sim/interpolation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="181">
-              <caret line="189" column="48" lean-forward="true" selection-start-line="189" selection-start-column="48" selection-end-line="189" selection-end-column="48" />
-              <folding>
-                <element signature="e#21#39#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="540">
+              <caret line="59" column="40" lean-forward="true" selection-start-line="59" selection-start-column="40" selection-end-line="59" selection-end-column="40" />
             </state>
           </provider>
         </entry>
@@ -203,18 +194,19 @@
         <option value="$PROJECT_DIR$/examples/waypoint_following_spline_interpolation.py" />
         <option value="$PROJECT_DIR$/utilities/actuation.py" />
         <option value="$PROJECT_DIR$/utilities/robotarium_simulation_builder.py" />
-        <option value="$PROJECT_DIR$/examples/go_to_point.py" />
         <option value="$PROJECT_DIR$/utilities_sim/interpolation.py" />
         <option value="$PROJECT_DIR$/utilities_sim/actuation.py" />
-        <option value="$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py" />
         <option value="$PROJECT_DIR$/examples/barriers_3d.py" />
+        <option value="$PROJECT_DIR$/examples/go_to_point.py" />
+        <option value="$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="y" value="68" />
-    <option name="width" value="1600" />
-    <option name="height" value="1732" />
+  <component name="ProjectFrameBounds" extendedState="4">
+    <option name="x" value="992" />
+    <option name="y" value="24" />
+    <option name="width" value="928" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -248,7 +240,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///home/chris/Georgia_Tech/Robotarium_Stuff/quadcopter-simulator-python/utilities/robotarium_simulation_builder.py" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/examples/go_to_point.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -263,7 +255,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.barriers_test">
+  <component name="RunManager" selected="Python.go_to_point_example">
     <configuration name="barriers_test" type="PythonConfigurationType" factoryName="Python">
       <module name="quadcopter-simulator-python" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -281,9 +273,6 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
     <configuration name="go_to_point_example" type="PythonConfigurationType" factoryName="Python">
       <module name="quadcopter-simulator-python" />
@@ -292,7 +281,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/bin/python" />
+      <option name="SDK_HOME" value="/usr/bin/python3.5" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -302,9 +291,6 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
     <list>
       <item itemvalue="Python.go_to_point_example" />
@@ -333,27 +319,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="68" width="3200" height="1732" extended-state="6" />
+    <frame x="992" y="24" width="928" height="1056" extended-state="4" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24705508" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" weight="0.32998943" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32800853" />
-      <window_info active="true" anchor="bottom" x="1600" y="124" width="1600" height="1676" id="Run" order="2" type="WINDOWED" visible="true" weight="0.32893288" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39828694" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.32893288" />
+      <window_info anchor="bottom" x="1297" y="498" width="617" height="343" id="Run" order="2" type="WINDOWED" weight="0.32893288" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39828694" />
+      <window_info id="Favorites" order="2" side_tool="true" weight="0.32998943" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" x="0" y="0" width="430" height="850" id="Documentation" order="3" side_tool="true" weight="0.32929516" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32800853" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -367,91 +353,56 @@
     <option name="LAST_COMMIT_MESSAGE" value="added barriers demo" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/core/numeric.py">
+    <entry file="file://$PROJECT_DIR$/examples/go_to_point.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-379">
-          <caret line="1317" column="4" selection-start-line="1317" selection-start-column="4" selection-end-line="1317" selection-end-column="4" />
+        <state relative-caret-position="675">
+          <caret line="48" column="20" lean-forward="true" selection-start-line="48" selection-start-column="20" selection-end-line="48" selection-end-column="20" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/patches.py">
+    <entry file="file://$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="813">
-          <caret line="1499" column="8" selection-start-line="1499" selection-start-column="8" selection-end-line="1499" selection-end-column="8" />
+        <state relative-caret-position="2490">
+          <caret line="175" column="44" selection-start-line="175" selection-start-column="44" selection-end-line="175" selection-end-column="44" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/linalg/linalg.py">
+    <entry file="file://$PROJECT_DIR$/utilities_sim/actuation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1819">
-          <caret line="2202" column="4" selection-start-line="2202" selection-start-column="4" selection-end-line="2202" selection-end-column="4" />
+        <state relative-caret-position="795">
+          <caret line="55" column="20" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
+          <folding>
+            <element signature="e#23#51#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/core/shape_base.py">
+    <entry file="file://$PROJECT_DIR$/utilities_sim/interpolation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="193">
-          <caret line="352" selection-start-line="352" selection-end-line="352" />
+        <state relative-caret-position="2805">
+          <caret line="189" column="48" lean-forward="true" selection-start-line="189" selection-start-column="48" selection-end-line="189" selection-end-column="48" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/axes/_axes.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="303">
-          <caret line="232" column="8" selection-start-line="232" selection-start-column="8" selection-end-line="232" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/core/numeric.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/patches.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/linalg/linalg.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/core/shape_base.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/axes/_axes.py" />
     <entry file="file://$PROJECT_DIR$/utilities/quadcopter_plot.py" />
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/image.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="293">
-          <caret line="137" selection-start-line="137" selection-end-line="137" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/backends/backend_agg.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="293">
-          <caret line="401" selection-start-line="401" selection-end-line="401" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/core/fromnumeric.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="40" selection-start-line="40" selection-end-line="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/figure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="293">
-          <caret line="1651" selection-start-line="1651" selection-end-line="1651" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharmCE2018.2/system/python_stubs/1157474990/builtins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="739">
-          <caret line="1166" column="8" selection-start-line="1166" selection-start-column="8" selection-end-line="1166" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/cvxopt/coneprog.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="566">
-          <caret line="4158" column="1" selection-start-line="4158" selection-start-column="1" selection-end-line="4158" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/image.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/backends/backend_agg.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/numpy/core/fromnumeric.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/figure.py" />
+    <entry file="file://$USER_HOME$/.PyCharmCE2018.2/system/python_stubs/1157474990/builtins.py" />
+    <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/cvxopt/coneprog.py" />
     <entry file="file://$PROJECT_DIR$/utilities/robotarium_communication_interface.py" />
-    <entry file="file://$USER_HOME$/crazyflie_ws/src/crazyflie_ros/crazyflie_demo/scripts/Exp_Robotarium_cf5.py">
+    <entry file="file://$PROJECT_DIR$/../../../../../crazyflie_demo/scripts/Exp_Robotarium_cf5.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-5944" />
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/crazyflie_ws/src/crazyflie_ros/crazyflie_demo/scripts/Sim_Robotarium_cf5.py">
+    <entry file="file://$PROJECT_DIR$/../../../../../crazyflie_demo/scripts/Sim_Robotarium_cf5.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
           <caret line="367" column="53" selection-start-line="367" selection-start-column="53" selection-end-line="367" selection-end-column="53" />
@@ -472,39 +423,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="252">
           <caret line="52" column="17" selection-start-line="52" selection-start-column="17" selection-end-line="52" selection-end-column="17" />
-          <folding>
-            <element signature="e#218#295#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="652">
-          <caret line="175" column="44" selection-start-line="175" selection-start-column="44" selection-end-line="175" selection-end-column="44" />
-          <folding>
-            <element signature="e#22#43#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/utilities_sim/actuation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="523">
-          <caret line="55" column="20" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
+        <state relative-caret-position="1035">
+          <caret line="71" selection-start-line="71" selection-end-line="71" />
           <folding>
             <element signature="e#23#51#0" expanded="true" />
-            <marker date="1567971806192" expanded="true" signature="1253:1426" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utilities_sim/interpolation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="189" column="48" lean-forward="true" selection-start-line="189" selection-start-column="48" selection-end-line="189" selection-end-column="48" />
-          <folding>
-            <element signature="e#21#39#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -513,16 +440,27 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2223">
           <caret line="57" column="55" lean-forward="true" selection-start-line="57" selection-start-column="55" selection-end-line="57" selection-end-column="55" />
-          <folding>
-            <element signature="e#23#100#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/examples/go_to_point.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="864">
-          <caret line="48" column="20" lean-forward="true" selection-start-line="48" selection-start-column="20" selection-end-line="48" selection-end-column="20" />
+        <state relative-caret-position="597">
+          <caret line="45" column="29" lean-forward="true" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-343">
+          <caret line="171" column="25" selection-start-line="171" selection-start-column="25" selection-end-line="171" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utilities_sim/interpolation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="59" column="40" lean-forward="true" selection-start-line="59" selection-start-column="40" selection-end-line="59" selection-end-column="40" />
         </state>
       </provider>
     </entry>
