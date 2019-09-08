@@ -16,15 +16,15 @@ def dist_between_nodes(node1_val, node2_val):
 def spline_interpolation(points, time_interval = None, total_time=None):
     # points (n x 3) array x, y, z points  #3 points
     # have at least 4 initial points
-    # print('spline interpolation')
+    print('spline interpolation')
     desired_points = 4
     #if time_interval is not None and time_interval.shape[0] == points.shape[0]:
     #    total_time = time_interval[-1]
     #else:
     #    time_interval = np.linspace(0, total_time, points.shape[0])  # 3 times
+    print("points before:", points)
     if points.shape[0] == 2:
-        # print("points before:", points)
-        # print("shape is 2")
+        print("shape is 2")
         new_points = np.array([[]])
         for i in range(desired_points):
             if i == 0:
@@ -40,11 +40,13 @@ def spline_interpolation(points, time_interval = None, total_time=None):
                     mid_point = calculate_midpoint(new_points[i - 1], points[1])
                 new_points = np.append(new_points, [mid_point], axis=0)
         points = new_points
-    dist = np.linalg.norm((points[0] - points[1]), 2)
+        dist = np.linalg.norm((points[0] - points[1]), 2)
 
     if total_time is None and time_interval is None:
-        total_time = dist / MAX_VELOCITY
-        velocity = float(dist) / total_time
+        velocity = float(dist) / TIME
+        total_time = dist / velocity
+        if  velocity > MAX_VELOCITY:
+            total_time = dist / MAX_VELOCITY
         time_interval = np.linspace(0, total_time, points.shape[0])
     elif time_interval is None:
         time_interval = np.linspace(0, total_time, points.shape[0])
@@ -53,7 +55,7 @@ def spline_interpolation(points, time_interval = None, total_time=None):
     num_of_polys = points.shape[
                        0] - 1  # 3
     a_matrix = np.zeros(((degree + 1) * num_of_polys, (
-                degree + 1) * num_of_polys))  # 18 x 18
+            degree + 1) * num_of_polys))  # 18 x 18
     num_of_coeffs = int(float(a_matrix.shape[1]) / float(
         num_of_polys))  # 6
     b_vector = np.zeros(((degree + 1) * num_of_polys, 1))

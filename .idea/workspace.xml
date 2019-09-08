@@ -2,11 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2ac22702-153e-4bd7-97e8-72018630f264" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/barriers_3d.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/barriers_3d.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/go_to_point.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/go_to_point.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utilities/actuation.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities/actuation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utilities/robotarium_simulation_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities/robotarium_simulation_builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities_sim/actuation.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities_sim/actuation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities_sim/interpolation.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities_sim/interpolation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -89,26 +88,66 @@
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
     </session>
+    <session id="-39034582">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.open.time.0" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="py" value="7" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="Python" value="7" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="py" value="819" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="Python" value="819" />
+        </counts>
+      </usages-collector>
+    </session>
   </component>
   <component name="FavoritesManager">
     <favorites_list name="quadcopter-simulator-python" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/examples/barriers_3d.py">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/go_to_point.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1026">
-              <caret line="58" column="18" selection-start-line="58" selection-start-column="18" selection-end-line="58" selection-end-column="18" />
+            <state relative-caret-position="246">
+              <caret line="35" column="28" selection-start-line="35" selection-start-column="28" selection-end-line="35" selection-end-column="28" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utilities/interpolation.py">
+        <entry file="file://$PROJECT_DIR$/examples/barriers_3d.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="912">
-              <caret line="50" column="35" selection-start-line="50" selection-start-column="35" selection-end-line="50" selection-end-column="35" />
+            <state relative-caret-position="2106">
+              <caret line="58" column="18" selection-start-line="58" selection-start-column="18" selection-end-line="58" selection-end-column="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="808">
+              <caret line="189" column="33" selection-start-line="189" selection-start-column="33" selection-end-line="189" selection-end-column="33" />
+              <folding>
+                <element signature="e#22#43#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -116,39 +155,36 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/examples/waypoint_following_spline_interpolation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="551">
-              <caret line="31" selection-start-line="31" selection-end-line="31" />
+            <state relative-caret-position="1251">
+              <caret line="52" column="17" selection-start-line="52" selection-start-column="17" selection-end-line="52" selection-end-column="17" />
               <folding>
-                <element signature="e#218#291#0" expanded="true" />
+                <element signature="e#218#295#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utilities/robotarium_simulation_builder.py">
+        <entry file="file://$PROJECT_DIR$/utilities_sim/actuation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="18" column="17" selection-start-line="18" selection-start-column="17" selection-end-line="18" selection-end-column="17" />
+            <state relative-caret-position="511">
+              <caret line="50" column="47" selection-start-line="50" selection-start-column="47" selection-end-line="50" selection-end-column="47" />
               <folding>
-                <element signature="e#22#43#0" expanded="true" />
-                <marker date="1547835857438" expanded="true" signature="463:468" ph="..." />
-                <marker date="1547835857438" expanded="true" signature="518:1496" ph="..." />
-                <marker date="1547835857438" expanded="true" signature="1771:1780" ph="..." />
-                <marker date="1547835857438" expanded="true" signature="1771:1867" ph="..." />
-                <marker date="1547835857438" expanded="true" signature="3793:3798" ph="..." />
-                <marker date="1547835857438" expanded="true" signature="3821:3830" ph="..." />
-                <marker date="1547835857438" expanded="true" signature="8700:8705" ph="..." />
+                <element signature="e#23#51#0" expanded="true" />
+                <marker date="1567964438969" expanded="true" signature="1154:1258" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utilities/actuation.py">
+        <entry file="file://$PROJECT_DIR$/utilities_sim/interpolation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1045">
-              <caret line="57" column="5" selection-start-line="57" selection-start-column="5" selection-end-line="57" selection-end-column="5" />
+            <state relative-caret-position="469">
+              <caret line="24" column="4" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
+              <folding>
+                <element signature="e#21#39#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -183,17 +219,20 @@
         <option value="$PROJECT_DIR$/examples/spline_test.py" />
         <option value="$PROJECT_DIR$/utilities/interpolation.py" />
         <option value="$PROJECT_DIR$/examples/waypoint_following_spline_interpolation.py" />
-        <option value="$PROJECT_DIR$/examples/go_to_point.py" />
         <option value="$PROJECT_DIR$/utilities/actuation.py" />
         <option value="$PROJECT_DIR$/utilities/robotarium_simulation_builder.py" />
         <option value="$PROJECT_DIR$/examples/barriers_3d.py" />
+        <option value="$PROJECT_DIR$/utilities_sim/interpolation.py" />
+        <option value="$PROJECT_DIR$/utilities_sim/actuation.py" />
+        <option value="$PROJECT_DIR$/examples/go_to_point.py" />
+        <option value="$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="y" value="30" />
-    <option name="width" value="960" />
-    <option name="height" value="1050" />
+    <option name="y" value="68" />
+    <option name="width" value="1600" />
+    <option name="height" value="1732" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -214,6 +253,11 @@
               <item name="quadcopter-simulator-python" type="462c0819:PsiDirectoryNode" />
               <item name="examples" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="quadcopter-simulator-python" type="b2602c69:ProjectViewProjectNode" />
+              <item name="quadcopter-simulator-python" type="462c0819:PsiDirectoryNode" />
+              <item name="utilities_sim" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -222,7 +266,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///home/chris/Georgia_Tech/Robotarium_Stuff/quadcopter-simulator-python/utilities/robotarium_simulation_builder.py" />
-    <property name="last_opened_file_path" value="$USER_HOME$/crazyflie_ws/src/crazyflie_ros/crazyflie_demo/scripts/Exp_Robotarium_cf5.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -237,7 +281,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.barriers_test">
+  <component name="RunManager" selected="Python.go_to_point_example">
     <configuration name="barriers_test" type="PythonConfigurationType" factoryName="Python">
       <module name="quadcopter-simulator-python" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -259,7 +303,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="example_test" type="PythonConfigurationType" factoryName="Python">
+    <configuration name="go_to_point_example" type="PythonConfigurationType" factoryName="Python">
       <module name="quadcopter-simulator-python" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -281,7 +325,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.example_test" />
+      <item itemvalue="Python.go_to_point_example" />
       <item itemvalue="Python.barriers_test" />
     </list>
   </component>
@@ -307,16 +351,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="30" width="1920" height="1050" extended-state="6" />
-    <editor active="true" />
+    <frame x="0" y="68" width="3200" height="1732" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.24709609" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.24705508" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.32998943" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32800853" />
-      <window_info anchor="bottom" x="915" y="88" width="990" height="992" id="Run" order="2" type="WINDOWED" weight="0.32893288" />
-      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.39828694" />
+      <window_info active="true" anchor="bottom" x="1600" y="124" width="1600" height="1676" id="Run" order="2" type="WINDOWED" visible="true" weight="0.32893288" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39828694" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -376,13 +419,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utilities/quadcopter_plot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="843">
-          <caret line="135" selection-start-line="135" selection-end-line="135" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/utilities/quadcopter_plot.py" />
     <entry file="file://$USER_HOME$/anaconda3/envs/quadcopter-simulator-python/lib/python3.6/site-packages/matplotlib/image.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="293">
@@ -425,23 +462,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utilities/robotarium_communication_interface.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="13" selection-start-line="13" selection-end-line="13" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/utilities/robotarium_communication_interface.py" />
     <entry file="file://$USER_HOME$/crazyflie_ws/src/crazyflie_ros/crazyflie_demo/scripts/Exp_Robotarium_cf5.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-5944" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/go_to_point.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="874">
-          <caret line="47" column="30" lean-forward="true" selection-start-line="47" selection-start-column="30" selection-end-line="47" selection-end-column="30" />
-        </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/crazyflie_ws/src/crazyflie_ros/crazyflie_demo/scripts/Sim_Robotarium_cf5.py">
@@ -451,51 +475,68 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/utilities/interpolation.py" />
+    <entry file="file://$PROJECT_DIR$/utilities/robotarium_simulation_builder.py" />
+    <entry file="file://$PROJECT_DIR$/utilities/actuation.py" />
     <entry file="file://$PROJECT_DIR$/examples/barriers_3d.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1026">
+        <state relative-caret-position="2106">
           <caret line="58" column="18" selection-start-line="58" selection-start-column="18" selection-end-line="58" selection-end-column="18" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utilities/interpolation.py">
+    <entry file="file://$PROJECT_DIR$/utilities_sim/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="912">
-          <caret line="50" column="35" selection-start-line="50" selection-start-column="35" selection-end-line="50" selection-end-column="35" />
+        <state>
+          <caret column="33" selection-start-column="33" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utilities_sim/interpolation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="469">
+          <caret line="24" column="4" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
+          <folding>
+            <element signature="e#21#39#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/examples/waypoint_following_spline_interpolation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="31" selection-start-line="31" selection-end-line="31" />
+        <state relative-caret-position="1251">
+          <caret line="52" column="17" selection-start-line="52" selection-start-column="17" selection-end-line="52" selection-end-column="17" />
           <folding>
-            <element signature="e#218#291#0" expanded="true" />
+            <element signature="e#218#295#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utilities/robotarium_simulation_builder.py">
+    <entry file="file://$PROJECT_DIR$/utilities_sim/actuation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="18" column="17" selection-start-line="18" selection-start-column="17" selection-end-line="18" selection-end-column="17" />
+        <state relative-caret-position="511">
+          <caret line="50" column="47" selection-start-line="50" selection-start-column="47" selection-end-line="50" selection-end-column="47" />
+          <folding>
+            <element signature="e#23#51#0" expanded="true" />
+            <marker date="1567964438969" expanded="true" signature="1154:1258" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/go_to_point.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="246">
+          <caret line="35" column="28" selection-start-line="35" selection-start-column="28" selection-end-line="35" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utilities_sim/robotarium_simulation_builder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="808">
+          <caret line="189" column="33" selection-start-line="189" selection-start-column="33" selection-end-line="189" selection-end-column="33" />
           <folding>
             <element signature="e#22#43#0" expanded="true" />
-            <marker date="1547835857438" expanded="true" signature="463:468" ph="..." />
-            <marker date="1547835857438" expanded="true" signature="518:1496" ph="..." />
-            <marker date="1547835857438" expanded="true" signature="1771:1780" ph="..." />
-            <marker date="1547835857438" expanded="true" signature="1771:1867" ph="..." />
-            <marker date="1547835857438" expanded="true" signature="3793:3798" ph="..." />
-            <marker date="1547835857438" expanded="true" signature="3821:3830" ph="..." />
-            <marker date="1547835857438" expanded="true" signature="8700:8705" ph="..." />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utilities/actuation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1045">
-          <caret line="57" column="5" selection-start-line="57" selection-start-column="5" selection-end-line="57" selection-end-column="5" />
         </state>
       </provider>
     </entry>

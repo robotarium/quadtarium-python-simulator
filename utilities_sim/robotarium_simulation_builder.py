@@ -7,13 +7,9 @@ from control import acker
 from cvxopt import matrix, solvers
 import time
 import pickle
-<<<<<<< HEAD:utilities/robotarium_simulation_builder.py
-from utilities.robotarium_communication_interface import RobotariumCommunication
-from utilities.actuation import invert_diff_flat_output, vel_back_step
-=======
 from utilities_sim.robotarium_communication_interface import RobotariumCommunication
-from utilities_sim.actuation import invert_diff_flat_output, projection_controller
->>>>>>> 43579e809da58321ec4f1ee3028aa211b2f6f585:utilities_sim/robotarium_simulation_builder.py
+from utilities_sim.actuation import invert_diff_flat_output, vel_back_step, gen_splines
+
 
 TIMEOUT_FLAG = False
 TIMEOUT_TIME = 30
@@ -123,7 +119,7 @@ class RobotariumEnvironment(object):
 
 
 
-    def update_poses(self):
+    def update_poses(self, velocities=False):
         # while loop until all quads are at desired new poses
         # iterates over quadcopter objects
         # send desired points to quadcopters
@@ -132,35 +128,93 @@ class RobotariumEnvironment(object):
         #do one iteration to get to that point, go to next quad
         # update until desired poses are acquired and return flag for each quad that you are done
         # print("update points")
-        for i in range(self.number_of_agents):
-            #print("goal point: ", self.desired_poses[i])
-            print("current: ", self.x_state[i])
-            desired_point = vel_back_step(self.x_state[i], self.vel_prev[i], self.desired_vels[i], self.des_vel_prev[i])
-            #print("desired point: {0} for robot: {1} \n".format(desired_point, i))
-            #self.u[i] = desired_point[3, :] - np.dot(self.Kb, self.x_state[i] - desired_point)
-            self.u[i] = desired_point
-            print("u: ", self.u[i])
-            # print("norm of u:", np.linalg.norm(self.u[i]))
-            if np.linalg.norm(self.u[i]) > 1e4:
-                self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
+        if velocities is True:
+            for i in range(self.number_of_agents):
+                #print("goal point: ", self.desired_poses[i])
+                print("current: ", self.x_state[i])
+                desired_point = vel_back_step(self.x_state[i], self.vel_prev[i], self.desired_vels[i], self.des_vel_prev[i])
+                #print("desired point: {0} for robot: {1} \n".format(desired_point, i))
+                #self.u[i] = desired_point[3, :] - np.dot(self.Kb, self.x_state[i] - desired_point)
+                self.u[i] = desired_point
+                print("u: ", self.u[i])
+                # print("norm of u:", np.linalg.norm(self.u[i]))
+                if np.linalg.norm(self.u[i]) > 1e4:
+                    self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
 
-        if self.barriers == True:
-            self.u = self.Safe_Barrier_3D(self.x_state, self.u)
+            if self.barriers == True:
+                self.u = self.Safe_Barrier_3D(self.x_state, self.u)
 
-        for i in range(self.number_of_agents):
-            self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
-            self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
-            self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
-            self.poses[i] = self.x_state[i][0, :]
-            self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
-            self.vel_prev[i] = self.x_state[i][1, :]
-            self.des_vel_prev[i] = self.desired_vels[i]
-        plt.pause(0.02)
-        self.time_record[self.count] = str(self.run_time())
-        self.x_record[self.count] = self.pose_real
-        self.orientation_record[self.count] = self.orientation_real
-        self.input_record[self.count] = self.u.copy()
-        self.count += 1
+            for i in range(self.number_of_agents):
+                print("u shape: ", self.u[i].shape)
+                print("b: ", self.bb.shape)
+                self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
+                self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
+                self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
+                self.poses[i] = self.x_state[i][0, :]
+                self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
+                self.vel_prev[i] = self.x_state[i][1, :]
+                self.des_vel_prev[i] = self.desired_vels[i]
+            plt.pause(0.02)
+            self.time_record[self.count] = str(self.run_time())
+            self.x_record[self.count] = self.pose_real
+            self.orientation_record[self.count] = self.orientation_real
+            self.input_record[self.count] = self.u.copy()
+            self.count += 1
+        else:
+            desired_trajs = dict()
+            index = dict()
+            end_points = np.array([[]])
+            for i in range(self.number_of_agents):
+                #print("goal point: ", self.desired_poses[i])
+                #print("current: ", self.x_state[i])
+                desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
+                if i == 0:
+                    end_points = desired_trajs[i][-1][0, :]
+                else:
+                    end_points = np.append(end_points, desired_trajs[i][-1][0, :], axis=0)
+                index[i] = 0
+
+                #print("des traj: ", desired_trajs[i][index[i]])
+
+            while np.linalg.norm((self.poses - end_points)) > 0.05:
+                for i in range(self.number_of_agents):
+                    if index[i] < desired_trajs[i].shape[0]:
+                        self.u[i] = desired_trajs[i][index[i]][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][index[i]])
+                    else:
+                        self.u[i] = desired_trajs[i][-1][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][-1])
+
+                    #print("u: ", self.u[i])
+                    # print("norm of u:", np.linalg.norm(self.u[i]))
+                    if np.linalg.norm(self.u[i]) > 1e4:
+                        self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
+                    index[i] += 1
+
+                if self.barriers == True:
+                    self.u = self.Safe_Barrier_3D(self.x_state, self.u)
+
+                for i in range(self.number_of_agents):
+                    #print("u shape: ", self.u[i].shape)
+                    #print("b: ", self.bb.shape)
+                    self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
+                    self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
+                    self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
+                    self.poses[i] = self.x_state[i][0, :]
+                    self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
+                    self.vel_prev[i] = self.x_state[i][1, :]
+                    self.des_vel_prev[i] = self.desired_vels[i]
+                plt.pause(0.02)
+                self.time_record[self.count] = str(self.run_time())
+                self.x_record[self.count] = self.pose_real
+                self.orientation_record[self.count] = self.orientation_real
+                self.input_record[self.count] = self.u.copy()
+                self.count += 1
+
+
+
+
+
+
+
 
     def check_timeout(self):
         if self.run_time() > TIMEOUT_TIME:

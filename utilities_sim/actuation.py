@@ -4,7 +4,7 @@ from math import atan2, sqrt
 import numpy as np
 import math
 from control import acker
-
+from utilities_sim.interpolation import spline_interpolation, extract_points
 MAX_VEL = 0.5
 MAX_ACC = 0.05
 MAX_J = 0.005
@@ -45,49 +45,13 @@ def delta_func(q_goal, q):
     return u
 
 
-def projection_controller(p_now, p_future):
-    # pose and vel are good
-    #print("p before: ", p_now)
-    #print("p future: ", p_future)
-    p_des = np.zeros((4, 3))
-    vel = delta_func(p_future, p_now[0, :])
-    #print("vel: ", vel)
-    vel_pre = np.linalg.norm(vel)
-    #print("vel pre: ", vel_pre)
-    if np.sum(vel_pre) > 0:
-        if vel_pre >= MAX_VEL:
-            #print("GREATER THAN MAX VEL")
-            vel_max = MAX_VEL*np.divide(vel, vel_pre)
-            p = p_now[0, :] + vel_max*T
-            #print("p: ", p)
-            #print("p now: ", p_now[0, :])
-            #print("vel max: ", vel_max)
-            v = vel_max
-        else:
-            p_des[0, :] = p_future
-            p = p_now[0, :] + vel * T
-            v = vel
-        #print("v: ", v)
-        delta_v = delta_func(v, p_now[1, :])
-        len_del_v = np.linalg.norm(delta_v)
-        a = MAX_ACC*np.divide(delta_v, len_del_v)
-        #print("a: ", a)
-        delta_a = delta_func(a, p_now[2, :])
-        len_del_a = np.linalg.norm(delta_a)
-        j = MAX_J*np.divide(delta_a, len_del_a)
-    else:
-        p = p_future
-        v = np.zeros(3)
-        a = np.zeros(3)
-        j = np.zeros(3)
-    #print("j: ", j)
-    p_des[0, :] = p
-    p_des[1, :] = v
-    p_des[2, :] = a
-    p_des[3, :] = j
-    #print("p after: ", p_des)
-
-    return p_des
+def gen_splines(p_now, p_future):
+    print("shape p_now: ", p_now)
+    print("shape p_future: ", p_future)
+    points = np.stack((p_now, p_future), axis=0)
+    traj_coeffs = spline_interpolation(points)
+    traj = extract_points(traj_coeffs)
+    return traj
 
 def vel_back_step(x_state, vel_prev, vel_des, vel_des_prev, dt=0.02):
     v = x_state[1, :]

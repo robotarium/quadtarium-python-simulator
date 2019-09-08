@@ -28,14 +28,14 @@ if __name__ == "__main__":
     # Iteration method is arbitrary, we will provide a function to check if experiment will timeout however
 
     # if specific initial poses are desired, set robotarium.initial_poses
-    # robotarium.initial_poses = np.array([[0.8, 0.7, -0.8]])
+    robotarium.initial_poses = np.array([[0.8, 0.7, -0.8]])
     # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set
     robotarium.build()
 
-    vels = np.array([[0.01, 0.01, 0]])
-
+    #vels = np.array([[0.01, 0.01, 0]])
+    x_desired = np.array([[1.0, -0.9, -0.7]])
     i = 0
-    COUNT = 1000
+    COUNT = 100
     while i < COUNT:
         # retrieve quadcopter poses (numpy array, n x m x 3) where n is the quadcopter index
 
@@ -43,8 +43,8 @@ if __name__ == "__main__":
 
         # Set desired pose
 
-        #robotarium.set_desired_setposes(x_desired)
-        robotarium.set_desired_vels(vels)
+        robotarium.set_desired_poses(x_desired)
+        #robotarium.set_desired_vels(vels)
         # send pose commands to robotarium
         robotarium.update_poses()
         i +=1
