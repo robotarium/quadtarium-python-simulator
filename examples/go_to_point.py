@@ -35,7 +35,7 @@ if __name__ == "__main__":
     #vels = np.array([[0.01, 0.01, 0]])
     x_desired = np.array([[1.0, -0.9, -0.7]])
     i = 0
-    COUNT = 100
+    COUNT =500
     while i < COUNT:
         # retrieve quadcopter poses (numpy array, n x m x 3) where n is the quadcopter index
 
