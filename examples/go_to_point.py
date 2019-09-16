@@ -4,10 +4,15 @@
 # 10/14/18
 # This file provides an example of how to send commands to the Robotarium for moving a number of quadcopters from one pose
 # to another.
-import sys
-import os
+
 import numpy as np
 from utilities_sim import robotarium_simulation_builder
+''' name: Point-to-Point Demo
+    author: Christopher Banks
+    date: 09/15/2019
+    description: A simple go to point example. Quadcopters are controlled by allowing users to specify points to the 
+    quadcopters in the form of a numpy array. A spline interpolation program finds splines that satisfy the constraints
+    of the quadcopter and generates an n-differentiable function.'''
 
 
 
@@ -15,7 +20,7 @@ TIMEOUT = False
 
 if __name__ == "__main__":
     # creates robotarium object, indictate if user would like to save data
-    robotarium = robotarium_simulation_builder.RobotariumEnvironment(save_data=True)
+    robotarium = robotarium_simulation_builder.RobotariumEnvironment(save_data=False)
 
     # robotarium object sets a random number of agents to be created
 
@@ -32,7 +37,6 @@ if __name__ == "__main__":
     # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set
     robotarium.build()
 
-    #vels = np.array([[0.01, 0.01, 0]])
     x_desired = np.array([[1.0, -0.9, -0.7]])
     i = 0
     COUNT =500
@@ -44,7 +48,6 @@ if __name__ == "__main__":
         # Set desired pose
 
         robotarium.set_desired_poses(x_desired)
-        #robotarium.set_desired_vels(vels)
         # send pose commands to robotarium
         robotarium.update_poses()
         i +=1

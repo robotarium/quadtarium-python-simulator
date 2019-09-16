@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import numpy as np
-from math import atan2, sqrt
 import math
 MAX_VELOCITY = 0.2
 TIME = 1
+
+''' name: Actuation File
+    author: Christopher Banks
+    date: 09/15/2019
+    description: Contains files for generating motion in simulation/experiment.'''
 
 def dist_between_nodes(node1_val, node2_val):
     sum_v = 0
@@ -16,15 +20,9 @@ def dist_between_nodes(node1_val, node2_val):
 def spline_interpolation(points, time_interval = None, total_time=None):
     # points (n x 3) array x, y, z points  #3 points
     # have at least 4 initial points
-    #print('spline interpolation')
     desired_points = 4
-    #if time_interval is not None and time_interval.shape[0] == points.shape[0]:
-    #    total_time = time_interval[-1]
-    #else:
-    #    time_interval = np.linspace(0, total_time, points.shape[0])  # 3 times
-    #print("points before:", points)
+
     if points.shape[0] == 2:
-        #print("shape is 2")
         new_points = np.array([[]])
         for i in range(desired_points):
             if i == 0:
@@ -45,10 +43,7 @@ def spline_interpolation(points, time_interval = None, total_time=None):
     if total_time is None and time_interval is None:
         velocity = float(dist) / TIME
         total_time = dist / velocity
-        #print("time; ", total_time)
-        #print("vel: ", velocity)
         if  velocity > MAX_VELOCITY:
-            #print("vel too high: ", velocity)
             total_time = dist / MAX_VELOCITY
         time_interval = np.linspace(0, total_time, points.shape[0])
     elif time_interval is None:
@@ -173,14 +168,9 @@ def extract_points(coefficients_info, dt=0.02):
     points = np.array([])
     for time in range(1, time_interval.shape[0]):
         curr_coeffs = coefficients[index * num_of_coeffs:num_of_coeffs * (index + 1)]
-        # print("curr coeffs: ", curr_coeffs)
-        # print("time interval: ", time_interval)
         while t < time_interval[time]:
-            # print("t: ", t)
-            # print("t now: ", time_interval[time])
             for dim in range(curr_coeffs.shape[1]):
                 dim_coeffs = curr_coeffs[:, dim]
-                # print("dim coeefs:", dim_coeffs)
                 point[0, dim] = dim_coeffs[0] * t ** 5 + dim_coeffs[1] * t ** 4 + dim_coeffs[2] * t ** 3 + dim_coeffs[
                     3] * t ** 2 + dim_coeffs[4] * t + dim_coeffs[5]
                 point[1, dim] = 5 * dim_coeffs[0] * t ** 4 + 4 * dim_coeffs[1] * t ** 3 + 3 * dim_coeffs[
@@ -188,15 +178,12 @@ def extract_points(coefficients_info, dt=0.02):
                 point[2, dim] = 20 * dim_coeffs[0] * t ** 3 + 12 * dim_coeffs[1] * t ** 2 + 6 * dim_coeffs[2] * t + 2 * \
                                 dim_coeffs[3]
                 point[3, dim] = 60 * dim_coeffs[0] * t ** 2 + 24 * dim_coeffs[1] * t + 6 * dim_coeffs[2]
-                # point[4, dim] = 120 * dim_coeffs[0] * t + 24 * dim_coeffs[1]
             if points.shape[0] == 0:
                 points = np.expand_dims(point, axis=0)
             else:
                 points = np.append(points, np.expand_dims(point, axis=0), axis=0)
             t += dt
         index += 1
-        # print("coefficients: ", coefficients)
-        # input("extracting points")
     return points
 
 
@@ -231,21 +218,15 @@ def calculate_midpoint(point_0, point_1, flat=False):
 
 def cost_of_path(path):
     tot_distance = 0
-    # print ("path shape: ", path)
     for i in range(path.shape[0]):
         if i < (path.shape[0] - 1):
-            # print ("point i: ", path[i, :, :][0])
             k = i + 1
-            # print ("point K: ", path[k, :, :][0])
-            # dist = dist_between_nodes(path[i, :, :][0], path[k, :, :][0])
             point_i = path[i]
             point_k = path[k]
             dist = dist_between_nodes(point_i, point_k)
-            # print("dist: ", dist)
             tot_distance += dist
         else:
             break
-            # print ("total distance", tot_distance)
     return tot_distance
 
 
@@ -269,15 +250,11 @@ def spline_return(points, dim=3, deg=5):
         time = dist / MAX_VELOCITY
 
     time_array = np.linspace(0, time, array_of_points.shape[0])
-    # print("time : ", time_array)
-    # print("points: ", array_of_points[:, 0])
     for i in range(dim):
         coeffs = np.expand_dims(np.polyfit(time_array, array_of_points[:, i], deg=deg), 1)
-        # print("coeffs:", coeffs.shape)
         if coefficients.shape[0] == 0:
             coefficients = coeffs
         else:
             coefficients = np.append(coefficients, coeffs, axis=1)
-            # print("coefficients: ", coefficients)
     points = extract_points((coefficients, deg + 1, time_array))
     return points

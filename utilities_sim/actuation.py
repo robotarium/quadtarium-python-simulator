@@ -2,17 +2,17 @@
 
 from math import atan2, sqrt
 import numpy as np
-import math
-from control import acker
 from utilities_sim.interpolation import spline_interpolation, extract_points
-MAX_VEL = 0.5
-MAX_ACC = 0.05
-MAX_J = 0.005
-T = 0.02
+''' name: Actuation File
+    author: Christopher Banks
+    date: 09/15/2019
+    description: Contains files for generating motion in simulation/experiment.'''
 
-z_2 = np.zeros((1, 3))
-z_3 = np.zeros((1, 3))
-
+# invert_diff_flat_output
+# input: state, thrust
+# output: roll, pitch, yawrate, thrust
+# description: given the full state of the robot, find the control inputs necessary to control
+# the quadcopter in the experiment using differential flatness.
 def invert_diff_flat_output(x, thrust_hover=0):
 
     m = 35.89 / 1000
@@ -31,32 +31,18 @@ def invert_diff_flat_output(x, thrust_hover=0):
 
     return roll, pitch, yaw, thrust
 
-def normalize(x):
-    # nomalize a vector
-    temp = sqrt(sum(x ** 2) * 1.0)
-    if (temp == 0):
-        return x
-    else:
-        return x / temp
-
-
-def delta_func(q_goal, q):
-    u = np.subtract(q_goal, q)
-    return u
-
-
+# gen splines
+# input: current point, future point
+# output: the returned full trajectory
+# Finds a n-differentiable function from p_now to p_future under Robotarium imposed constraints (e.g. max velocities)
 def gen_splines(p_now, p_future):
-    #p_now = np.array([ 1.,   0.,  -0.8])
-    #p_future = np.array([ 0.9991086,   0.00131264, -0.8       ])
-    #print(" p_now: ", p_now)
-    #print("p_future: ", p_future)
     points = np.stack((p_now, p_future), axis=0)
     traj_coeffs = spline_interpolation(points)
-    #print("time: ", traj_coeffs[2])
     traj = extract_points(traj_coeffs)
-    #print("trajectory:", traj)
     return traj
 
+
+# not working
 def vel_back_step(x_state, vel_prev, vel_des, vel_des_prev, dt=0.02):
     v = x_state[1, :]
     dv_dt = (v - vel_prev) / dt
@@ -66,18 +52,5 @@ def vel_back_step(x_state, vel_prev, vel_des, vel_des_prev, dt=0.02):
     d_ves_dt_2 = d_ves_dt*d_ves_dt
 
     k_1 = np.array([6, 6, 6])
-    print("dv_dt: ", dv_dt)
-    print("dves_dt: ", d_ves_dt)
     u_3 = -k_1*(v-vel_des)*dv_dt_2 - k_1*(v-vel_des)*d_ves_dt_2
-
-    print("u3: ", u_3)
     return u_3
-
-
-
-# if __name__ == "__main__":
-#    print("spline interpolation")
-#    points = np.array([[1, 2, 4], [3, 4, 4], [5, 5, 5]])
-#
-#    coeffs = spline_interpolation(points, total_time=100)
-#    print("coeefs: ", coeffs)

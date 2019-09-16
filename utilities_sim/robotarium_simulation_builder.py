@@ -14,6 +14,16 @@ from utilities_sim.actuation import invert_diff_flat_output, vel_back_step, gen_
 TIMEOUT_FLAG = False
 TIMEOUT_TIME = 30
 
+''' name: Robotarium Simulation File
+    author: Christopher Banks
+    date: 09/15/2019
+    description: Contains files for simulating quadcopter (QuadcopterObject) and quadcopter dynamics.'''
+
+
+# contains a simulated version of the Robotarium Environment used for the quadcopters.
+# quadcopters are simulated as a chain of integrators with a control input designed to minimize
+# the jerk, thus, 3x differentiable functions must be supplied in order to generate the necessary states
+# to back out the control inputs from the differentially flat properties of the quadcopter dynamics.
 class RobotariumEnvironment(object):
     def __init__(self, save_data=True, barriers=True):
         self.number_of_agents = rand.randint(3, 10)
@@ -92,7 +102,6 @@ class RobotariumEnvironment(object):
 
 
     def hover_quads_at_initial_poses(self, takeoff_time=10.0):
-        print("HOVER QUADS")
         reached_des_flag = np.zeros((self.number_of_agents))
         t0 = time.time()
         self.desired_poses = np.zeros((self.number_of_agents, 3))
@@ -108,7 +117,6 @@ class RobotariumEnvironment(object):
         while np.sum(reached_des_flag) < self.number_of_agents:
             t = time.time()
             s = min((t - t0) / takeoff_time, 1.0)
-            #print('HOVER')
             for i in range(self.number_of_agents):
                 reached_des_flag[i], self.poses[i] = self.crazyflie_objects[i].hover_bot(self.desired_poses[i], s, self.robotarium_simulator_plot)
             plt.pause(0.001)
@@ -127,14 +135,10 @@ class RobotariumEnvironment(object):
         # quadcopter updates dynamics from current point based on interpolation point
         #do one iteration to get to that point, go to next quad
         # update until desired poses are acquired and return flag for each quad that you are done
-        # print("update points")
         if velocities is True:
             for i in range(self.number_of_agents):
-                #print("goal point: ", self.desired_poses[i])
                 print("current: ", self.x_state[i])
                 desired_point = vel_back_step(self.x_state[i], self.vel_prev[i], self.desired_vels[i], self.des_vel_prev[i])
-                #print("desired point: {0} for robot: {1} \n".format(desired_point, i))
-                #self.u[i] = desired_point[3, :] - np.dot(self.Kb, self.x_state[i] - desired_point)
                 self.u[i] = desired_point
                 print("u: ", self.u[i])
                 # print("norm of u:", np.linalg.norm(self.u[i]))
@@ -164,63 +168,32 @@ class RobotariumEnvironment(object):
             desired_trajs = dict()
             index = dict()
             end_points = np.array([[]])
-            #N = 0
+
             for i in range(self.number_of_agents):
                 desired_trajs[i] = np.zeros((4, 3))
-                #print("goal point: ", self.desired_poses[i])
-                #print("current: ", self.x_state[i])
                 if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:
                     desired_trajs[i][0, :] = self.desired_poses[i]
                     desired_trajs[i] = np.stack((desired_trajs[i], desired_trajs[i]),axis=0)
                 else:
                     desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
-                #print("des points; ", desired_trajs[i])
                 if i == 0:
                     end_points = np.array([desired_trajs[i][-1][0, :]])
-                    #print("end: ", end_points)
                 else:
-                    #print("end points: ", end_points.shape)
                     end_points = np.append(end_points, np.array([desired_trajs[i][-1][0, :]]), axis=0)
                 index[i] = 0
-                #N += desired_trajs[i].shape[0]
 
-                #print("des traj: ", desired_trajs[i][index[i]])
-            #print("all end point: ", end_points)
-            #print("N: ", N)
-            index_sum = 0
-
-            #while index_sum < N:
-           # print("N: ", N)
-            index_sum = 0
-            #print("diff: ", np.linalg.norm((self.poses - end_points)))
             for i in range(self.number_of_agents):
-                #if index[i] < desired_trajs[i].shape[0]:
-                #print("input u: ", desired_trajs[i][index[i]][3, :])
                 self.u[i] = desired_trajs[i][index[i]][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][index[i]])
-                #else:
-                #    self.u[i] = desired_trajs[i][-1][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][-1])
-                #
-                #print("u: ", self.u[i])
-                # print("norm of u:", np.linalg.norm(self.u[i]))
                 if np.linalg.norm(self.u[i]) > 1e4:
                     self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
-                #index[i] += 1
-                #index_sum += index[i]
-                #print("sum :", index_sum)
-
             if self.barriers == True:
                 self.u = self.Safe_Barrier_3D(self.x_state, self.u)
 
             for i in range(self.number_of_agents):
-                #print("u shape: ", self.u[i].shape)
-                #print("b: ", self.bb.shape)
                 self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
                 self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
                 self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
                 self.poses[i] = self.x_state[i][0, :]
-                self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
-               # self.vel_prev[i] = self.x_state[i][1, :]
-                #self.des_vel_prev[i] = self.desired_vels[i]
             plt.pause(0.02)
             self.time_record[self.count] = str(self.run_time())
             self.x_record[self.count] = self.pose_real
@@ -232,6 +205,7 @@ class RobotariumEnvironment(object):
 
 
     def check_timeout(self):
+        # on the robotarium, programs will timeout after 5 minutes
         if self.run_time() > TIMEOUT_TIME:
             global TIMEOUT_FLAG
             TIMEOUT_FLAG = True
@@ -244,8 +218,8 @@ class RobotariumEnvironment(object):
         return time_now
 
     def save_data(self):
+        # currently just saves time, pose, oreintation that we send to the quadcopter as a pickle file
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
-        #print("time:", time_stamp)
         file_n = 'quads_robotarium_'+ time_stamp +'.pckl'
         arrays = [self.time_record, self.x_record, self.orientation_real, self.input_record]
         with open(file_n, 'wb') as file:
@@ -298,6 +272,7 @@ class RobotariumEnvironment(object):
         return u
 
     def plot_robotarium(self):
+        # plot environment
         fig = plt.figure()
         ax = Dim3.Axes3D(fig)
         ax.set_aspect('equal')
@@ -312,6 +287,8 @@ class RobotariumEnvironment(object):
         return ax
 
 
+# quadcopter object created for each quadcopter in order to update
+# dynamics, plot, etc.
 class QuadcopterObject(RobotariumCommunication):
     def __init__(self, robotarium_simulator, initial_pose=None, index=0):
         self.position = np.array([])
@@ -330,8 +307,6 @@ class QuadcopterObject(RobotariumCommunication):
 
     def hover_bot(self, hover_point, s, sim_env):
         next_pos = np.zeros((3))
-        #print("pose" , self.position)
-        # print("hove point: ", hover_point)
         dx = hover_point[0] - self.position[0]
         dy = hover_point[1] - self.position[1]
         dz = hover_point[2] - self.position[2]

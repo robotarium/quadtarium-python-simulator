@@ -1,6 +1,12 @@
 import numpy as np
 from utilities_sim import quadcopter_plot
-# plots the quadcopter
+
+''' name: Robotarium Communication Interface File
+    author: Christopher Banks
+    date: 09/15/2019
+    description: Contains files for simulating the communication framework of the Robotarium for
+    the quadcopters. DO NOT EDIT'''
+
 
 class RobotariumCommunication(object):
     def __init__(self, robotarium_sim_environment, index):
@@ -10,7 +16,7 @@ class RobotariumCommunication(object):
         self.quadcopter_communicate = None
         self.my_pose = None
         self.orientation = np.array([])
-        self.thrust_hover = 34000 #arbitrary value
+        self.thrust_hover = 34000 # arbitrary value
 
     def set_initial_random_pose(self):
         pose_x = (1.3 - (-1.3))*np.random.sample() + (-1.3)

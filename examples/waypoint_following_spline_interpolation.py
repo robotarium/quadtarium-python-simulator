@@ -2,17 +2,20 @@
 # Examples Go-to-Point File
 # Christopher Banks
 # 10/14/18
-# This file provides an example of how to send commands to the Robotarium for moving a number of quadcopters from one pose
-# to another.
 from utilities_sim.robotarium_simulation_builder import RobotariumEnvironment
 from utilities_sim.interpolation import spline_interpolation, extract_points
 import numpy as np
-
-TIMEOUT = False
+''' name: Spline Interpolation Demo
+    author: Christopher Banks
+    date: 10/14/18
+    description: A simple go-to-spline example. Quadcopters are controlled by allowing users to specify points to the 
+    quadcopters in the form of a numpy array. A spline interpolation program finds splines that satisfy the constraints
+    of the quadcopter and generates an n-differentiable function. Users can use the spline interpolation function to generate
+    splines from a sequence of waypoints and send these points to the Robotarium.'''
 
 if __name__ == "__main__":
     # creates robotarium object, indictate if user would like to save data
-    robotarium = RobotariumEnvironment(save_data=True)
+    robotarium = RobotariumEnvironment(save_data=False)
 
     # robotarium object sets a random number of agents to be created
 
@@ -25,7 +28,7 @@ if __name__ == "__main__":
     # Iteration method is arbitrary, we will provide a function to check if experiment will timeout however
 
     # if specific initial poses are desired, set robotarium.initial_poses
-    #robotarium.initial_poses = np.array([[0.1, 0.1, -0.5], [1, 0.3, -1.3], [1, 1, -1.2]])
+    # robotarium.initial_poses = np.array([[0.1, 0.1, -0.5], [1, 0.3, -1.3], [1, 1, -1.2]])
 
     # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set
 
