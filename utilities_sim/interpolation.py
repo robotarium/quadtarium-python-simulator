@@ -17,7 +17,7 @@ def dist_between_nodes(node1_val, node2_val):
     dist = np.sqrt(sum_v)
     return dist
 
-def spline_interpolation(points, time_interval = None, total_time=None):
+def spline_interpolation(points, time_interval=None, total_time=None):
     # points (n x 3) array x, y, z points  #3 points
     # have at least 4 initial points
     desired_points = 4
@@ -39,6 +39,12 @@ def spline_interpolation(points, time_interval = None, total_time=None):
                 new_points = np.append(new_points, [mid_point], axis=0)
         points = new_points
         dist = np.linalg.norm((points[0] - points[1]), 2)
+    else:
+        dist = 0
+        for i in range(0, points.shape[0]-1):
+            dist += np.linalg.norm((points[i] - points[i+1]), 2)
+
+
 
     if total_time is None and time_interval is None:
         velocity = float(dist) / TIME
