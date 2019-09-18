@@ -12,7 +12,9 @@ necessary package requirements)
 1. **python3 -m examples.[filename]** (run the files in the examples/ directory using this command)
 
 To run your own simulations using this simulator:
-
+1. **move your file to the quadcopter-simulation-python/ directory**
+1. **make sure it has similar syntax to the example files**
+1. run **python3 [your file]**
 
 
 
