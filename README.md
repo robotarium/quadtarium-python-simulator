@@ -16,7 +16,7 @@ To run your own simulations using this simulator:
 1. **make sure it has similar syntax to the example files**
 1. run **python3 [your file]**
 
-If you choose to use the simulator without using conda or the conda text file download the following packages:
+If you choose to use the simulator without using conda, or the conda text file, download the following packages:
 * python=3.5
 * numpy=1.15.2
 * matplotlib=3.0
