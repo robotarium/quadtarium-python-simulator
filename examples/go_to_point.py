@@ -6,7 +6,8 @@
 # to another.
 
 import numpy as np
-from utilities_sim import robotarium_simulation_builder
+# from utilities_sim import robotarium_simulation_builder
+import utilities_sim.robotarium_simulation_builder as robotarium_simulation_builder
 ''' name: Point-to-Point Demo
     author: Christopher Banks
     date: 09/15/2019
