@@ -82,10 +82,14 @@ class RobotariumEnvironment(object):
         if len(self.initial_poses) == 0:
             for i in range(self.number_of_agents):
                 self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, index=i)
-                self.poses = self.get_quadcopter_poses()
-                self.hover_quads_at_initial_poses()
+                # self.hover_quads_at_initial_poses()
                 self.vel_prev[i] = np.zeros((1, 3))
                 self.des_vel_prev[i] = np.zeros((1, 3))
+            self.poses = self.get_quadcopter_poses() + np.array([0, 0, -0.8])
+            for i in range(self.number_of_agents):
+                self.x_state[i] = np.zeros((4, 3))
+                self.x_state[i][0] = self.poses[i]
+            print("poses:", self.poses)
 
 
 
