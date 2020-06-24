@@ -21,8 +21,8 @@ TIMEOUT_TIME = 30
 
 
 # contains a simulated version of the Robotarium Environment used for the quadcopters.
-# quadcopters are simulated as a chain of integrators with a control input designed to minimize
-# the jerk, thus, 3x differentiable functions must be supplied in order to generate the necessary states
+# quadcopters are simulated as a chain of integrators with a control input designed to be
+# 3x differentiable in order to generate the necessary states
 # to back out the control inputs from the differentially flat properties of the quadcopter dynamics.
 class RobotariumEnvironment(object):
     def __init__(self, save_data=True, barriers=True):
@@ -162,7 +162,7 @@ class RobotariumEnvironment(object):
                 self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
                 self.vel_prev[i] = self.x_state[i][1, :]
                 self.des_vel_prev[i] = self.desired_vels[i]
-            plt.pause(0.02)
+            plt.pause(0.001)
             self.time_record[self.count] = str(self.run_time())
             self.x_record[self.count] = self.pose_real
             self.orientation_record[self.count] = self.orientation_real

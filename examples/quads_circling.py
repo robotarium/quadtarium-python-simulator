@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 if np.linalg.norm(u_hat[i]) > 1e4:
                     u_hat[i] = u_hat[i]/np.linalg.norm(u_hat[i])*1e4
             u = robotarium.Safe_Barrier_3D(x_state, u_hat)
-            #u = u_hat
+            # u = u_hat
             for i in range(robotarium.number_of_agents):
                 xd[i] = np.dot(A, x_state[i]) + np.dot(b, u[i])
                 x_state[i] = x_state[i] + xd[i]*dt
