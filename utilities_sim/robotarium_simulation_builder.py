@@ -68,8 +68,7 @@ class RobotariumEnvironment(object):
         """
         poses = np.zeros((self.number_of_agents, 3))
         for i in range(self.number_of_agents):
-            pose = self.crazyflie_objects[i].position
-            poses[i] = pose
+            poses[i] = self.crazyflie_objects[i].pose
         return poses
 
     def set_desired_poses(self, poses):
@@ -194,7 +193,7 @@ class RobotariumEnvironment(object):
             self.x_state[i] = self.x_state[i] + xd[i]*self.dt
             self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
             self.poses[i] = self.x_state[i][0, :]
-            self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
+            self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
             self.vel_prev[i] = self.x_state[i][1, :]
             self.des_vel_prev[i] = self.desired_vels[i]
 
@@ -336,7 +335,6 @@ class QuadcopterObject(RobotariumCommunication):
         else:
             self.my_pose, self.orientation = self.set_init_pose(initial_pose)
             self.thrust_hover = self.thrust_hover
-        self.update_pose_and_orientation()
 
     def hover_bot(self, hover_point, s, sim_env):
         """
@@ -350,15 +348,15 @@ class QuadcopterObject(RobotariumCommunication):
             position (ndarray): next position to go as x,y,z
 
         """
-        dx = hover_point - self.position  # x,y,z diff
-        next_pos = self.position + s*dx
+        dx = hover_point - self.pose  # x,y,z diff
+        next_pos = self.pose + s*dx
         self.set_pose(next_pos, sim_env)
-        self.position = next_pos
-        error = np.linalg.norm((hover_point - self.position))
+        self.pose = next_pos
+        error = np.linalg.norm((hover_point - self.pose))
         if error < 0.1:
-            return 1, self.position
+            return 1, self.pose
         else:
-            return 0, self.position
+            return 0, self.pose
 
     def go_to(self, desired_pose, sim_env):
         """Go to goal.
@@ -372,7 +370,7 @@ class QuadcopterObject(RobotariumCommunication):
         """
         roll, pitch, yaw, thrust = self.set_diff_flat_term(desired_pose)
         self.set_pose(desired_pose[0, :], sim_env, roll, pitch, yaw)
-        self.update_pose_and_orientation()
+        self.get_pose_and_orientation()
 
 
     def set_diff_flat_term(self, goal_pose):
@@ -391,11 +389,4 @@ class QuadcopterObject(RobotariumCommunication):
         r, p, y, t = invert_diff_flat_output(goal_pose, thrust_hover=self.thrust_hover)
         return r, p, y, t
 
-    def update_pose_and_orientation(self):
-        """
 
-        Returns:
-
-        """
-        self.position, self.orientation = self.get_pose_and_orientation()
-        return self.position, self.orientation

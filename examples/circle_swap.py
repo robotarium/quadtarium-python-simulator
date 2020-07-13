@@ -59,8 +59,6 @@ if __name__ == "__main__":
             x_goal = p_circ[:, :, 1]
 
 
-        print(x_goal.shape)
-
         # Set desired pose
         robotarium.set_desired_poses(x_goal)
         # send pose commands to robotarium
