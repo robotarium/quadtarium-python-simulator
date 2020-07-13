@@ -8,19 +8,27 @@ from utilities_sim.interpolation import spline_interpolation, extract_points
     date: 09/15/2019
     description: Contains files for generating motion in simulation/experiment.'''
 
-# invert_diff_flat_output
-# input: state, thrust
-# output: roll, pitch, yawrate, thrust
-# description: given the full state of the robot, find the control inputs necessary to control
-# the quadcopter in the experiment using differential flatness.
 def invert_diff_flat_output(x, thrust_hover=0):
+    """Given the full state of the robot, find the control inputs necessary to control the quadcopter in the experiment
+    using differential flatness.
 
-    m = 35.89 / 1000
-    g = 9.8
+    Args:
+        x (ndarray): desired state of size (4,3)
+        thrust_hover (float): thrust required for hovering (TODO: is this correct?)
 
-    beta1 = - x[2, 0]
-    beta2 = - x[2, 2] + 9.8
-    beta3 = x[2, 1]
+    Returns:
+        roll (float):
+        pitch (float):
+        yaw (float): Fixed to zero
+        thrust (float):
+    """
+
+    m = 35.89 / 1000  # mass of the quad in kg
+    g = 9.8  # gravity constant
+
+    beta1 = - x[2, 0]  # acceleration in the x direction
+    beta2 = - x[2, 2] + 9.8  # acceleration in the z direction
+    beta3 = x[2, 1]  # acceleration in the y direction
 
     roll = atan2(beta3, sqrt(beta1 ** 2 + beta2 ** 2))
     pitch = atan2(beta1, beta2)
@@ -31,11 +39,18 @@ def invert_diff_flat_output(x, thrust_hover=0):
 
     return roll, pitch, yaw, thrust
 
-# gen splines
-# input: current point, future point
-# output: the returned full trajectory
-# Finds a n-differentiable function from p_now to p_future under Robotarium imposed constraints (e.g. max velocities)
 def gen_splines(p_now, p_future):
+    """Finds a n-differentiable function from p_now to p_future which respects the Robotarium imposed constraints such
+    as max velocities.
+
+    Args:
+        p_now (ndarray): current x,y,z position of size (3,)
+        p_future (ndarray): desired x,y,z position of size (3,)
+
+    Returns:
+        traj (ndarray): planned trajectory of size (n_points, 4, 3)
+
+    """
     points = np.stack((p_now, p_future), axis=0)
     traj_coeffs = spline_interpolation(points)
     traj = extract_points(traj_coeffs)
