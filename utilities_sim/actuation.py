@@ -57,7 +57,7 @@ def gen_splines(p_now, p_future):
     return traj
 
 
-# not working
+# TODO: not working
 def vel_back_step(x_state, vel_prev, vel_des, vel_des_prev, dt=0.02):
     v = x_state[1, :]
     dv_dt = (v - vel_prev) / dt

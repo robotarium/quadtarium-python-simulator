@@ -1,1 +1,2 @@
-./idea/*
+.idea/*
+./utilities_sim/__pycache__/*

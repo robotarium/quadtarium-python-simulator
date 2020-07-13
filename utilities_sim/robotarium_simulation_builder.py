@@ -339,11 +339,19 @@ class QuadcopterObject(RobotariumCommunication):
         self.update_pose_and_orientation()
 
     def hover_bot(self, hover_point, s, sim_env):
-        next_pos = np.zeros((3))
-        dx = hover_point - self.position
-        next_pos[0] = self.position[0] + s*dx[0]
-        next_pos[1] = self.position[1] + s*dx[1]
-        next_pos[2] = self.position[2] + s*dx[2]
+        """
+
+        Args:
+            hover_point (ndarray): Hover points as x,y,z
+            s (float): time step
+            sim_env: simulation environment
+
+        Returns:
+            position (ndarray): next position to go as x,y,z
+
+        """
+        dx = hover_point - self.position  # x,y,z diff
+        next_pos = self.position + s*dx
         self.set_pose(next_pos, sim_env)
         self.position = next_pos
         error = np.linalg.norm((hover_point - self.position))
@@ -353,21 +361,30 @@ class QuadcopterObject(RobotariumCommunication):
             return 0, self.position
 
     def go_to(self, desired_pose, sim_env):
+        """Go to goal.
+
+        Args:
+            desired_pose (ndarray):
+            sim_env (object): simulation environment (robotarium object)
+
+        Returns:
+
+        """
         roll, pitch, yaw, thrust = self.set_diff_flat_term(desired_pose)
         self.set_pose(desired_pose[0, :], sim_env, roll, pitch, yaw)
         self.update_pose_and_orientation()
 
 
     def set_diff_flat_term(self, goal_pose):
-        """
+        """Obtain roll, pitch, yaw, thrust for going to a desired position.
 
         Args:
             goal_pose (ndarray): Desired pose of size (4, 3)
 
         Returns:
-            r (float): Roll (usually just 0 here)
-            p (float): Pitch (usually just 0 here)
-            y (float): Yaw (usually just 0 here)
+            r (float): Roll
+            p (float): Pitch
+            y (float): Yaw (currently just 0 here)
             t (float): Thrust
 
         """
@@ -375,5 +392,10 @@ class QuadcopterObject(RobotariumCommunication):
         return r, p, y, t
 
     def update_pose_and_orientation(self):
+        """
+
+        Returns:
+
+        """
         self.position, self.orientation = self.get_pose_and_orientation()
         return self.position, self.orientation
