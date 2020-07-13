@@ -46,7 +46,7 @@ class RobotariumEnvironment(object):
         self.des_vel_prev = dict()  # TODO: Same question as above...
         self.u = dict()  # control inputs to the robots
         self.orientation_real = dict()  # TODO: What is this for?
-        self.pose_real = dict() # TODO: What is this for?
+        self.pose_real = dict()  # TODO: What is this for?
         self.dt = 0.03  # time step size
         # Data recording
         self.time_record = dict()  # time data
@@ -148,13 +148,23 @@ class RobotariumEnvironment(object):
 
 
     def update_poses(self, velocities=False):
-        # while loop until all quads are at desired new poses
-        # iterates over quadcopter objects
-        # send desired points to quadcopters
-        # make interpolation points from desired point and make max velocity can fly at
-        # quadcopter updates dynamics from current point based on interpolation point
-        #do one iteration to get to that point, go to next quad
-        # update until desired poses are acquired and return flag for each quad that you are done
+        """Update the state of the quads. User specifies desired pose, a 3 times differentiable trajectory will be
+        be computed to reach that desired pose. Here, only a single step is taken to reach the first point in the
+        computed trajectory computed by the spline. #TODO: is this correct?
+            1) iterate over quadcopter objects
+            2) send desired points to quads
+            3) make interpolation points from desired point and make max velocity can fly at
+            4) quadcopter updates dynamics from current points based on interpolation point
+            5) only computes a single iteration from the trajectory computed in the spline
+            6) one should call this function until desired poses are acquired which is signaled by the return flag
+
+        Args:
+            velocities (bool): Determines the control mode, either we give the velocities to the quads as commands or
+            next pose.
+
+        Returns:
+
+        """
 
         if velocities is True:
             for i in range(self.number_of_agents):
@@ -247,7 +257,7 @@ class RobotariumEnvironment(object):
 
         Args:
             x (ndarray): State of the robots of size (?,?,?)
-            u (ndarray): User specified desired pose to the quads of size (?,?,?)
+            u (dict): User specified desired poses (x,y,z), keys are quad indices and values are of size (3,)
             zscale (float): Scaling of the z-axis
             gamma (float): Barrier Gain
 
@@ -318,9 +328,9 @@ class RobotariumEnvironment(object):
         return ax
 
 
-# quadcopter object created for each quadcopter in order to update
-# dynamics, plot, etc.
 class QuadcopterObject(RobotariumCommunication):
+    """Quadcopter object created for each quadcopter in order to update dynamics, plot, etc...
+    """
 
     def __init__(self, robotarium_simulator, initial_pose=None, index=0):
         self.position = np.array([])
