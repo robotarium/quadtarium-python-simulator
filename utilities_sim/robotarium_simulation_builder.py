@@ -36,17 +36,17 @@ class RobotariumEnvironment(object):
         solvers.options['show_progress'] = False  # verbose option for the CBF QP solver
         # State related parameters
         self.initial_poses = np.array([])
-        self.poses = np.array([])
-        self.desired_poses = np.zeros((self.number_of_agents, 3))
-        self.desired_vels = np.zeros((self.number_of_agents, 3))
+        self.poses = np.array([])  # Chain of Integrator Model (xyz) state
+        self.desired_poses = np.zeros((self.number_of_agents, 3))  # User desired poses
         self.crazyflie_objects = {}
         self.time = time.time()
         self.x_state = dict()
-        self.vel_prev = dict()  # TODO: Why is this a dict? Initialized to vel_prev[i] = np.array((1,3)) later
-        self.des_vel_prev = dict()  # TODO: Same question as above...
+        self.vel_prev = dict()  # for backstepping, vel_prev[i] = np.array((1,3))
+        self.des_vel_prev = dict()  # for backstepping
+        self.desired_vels = np.zeros((self.number_of_agents, 3))  # User desired velocities (used for backstepping)
         self.u = dict()  # control inputs to the robots
-        self.orientation_real = dict()  # TODO: What is this for?
-        self.pose_real = dict()  # TODO: What is this for?
+        self.orientation_real = dict()  # Actual orientation of the quadcopter
+        self.pose_real = dict()  # Actual State of the quadcopter
         self.dt = 0.03  # time step size
         # Data recording
         self.time_record = dict()  # time data
@@ -57,6 +57,7 @@ class RobotariumEnvironment(object):
         self.AA = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
         self.bb = np.array([[0], [0], [0], [1]])
         self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))  # Gains
+
 
 
     def get_quadcopter_poses(self):
@@ -126,17 +127,13 @@ class RobotariumEnvironment(object):
         t0 = time.time()
         self.desired_poses = np.zeros((self.number_of_agents, 3))
         for i in range(self.number_of_agents):
-            if len(self.initial_poses) > 0:
-                self.desired_poses[i] = self.initial_poses[i]
-            else:
-                self.desired_poses[i] = np.array([self.poses[i][0], self.poses[i][1], -0.6])  # TODO: Why is the z -0.6?
-
+            self.desired_poses[i] = self.initial_poses[i]
             self.x_state[i] = np.zeros((4, 3))
             self.x_state[i][0] = self.poses[i]
 
         while np.sum(reached_des_flag) < self.number_of_agents:
             t = time.time()
-            s = min((t - t0) / takeoff_time, 1.0)
+            s = min((t - t0) / takeoff_time, 1.0)  # kind of a sudo-gain
             for i in range(self.number_of_agents):
                 reached_des_flag[i], self.poses[i] = self.crazyflie_objects[i].hover_bot(self.desired_poses[i], s, self.robotarium_simulator_plot)
             plt.pause(0.001)
@@ -148,7 +145,7 @@ class RobotariumEnvironment(object):
 
 
     def update_poses(self, velocities=False):
-        """Update the state of the quads. User specifies desired pose, a 3 times differentiable trajectory will be
+        """Update the state of the quads. User specifies desired pose, at least 3 times differentiable trajectory will be
         be computed to reach that desired pose. Here, only a single step is taken to reach the first point in the
         computed trajectory computed by the spline. #TODO: is this correct?
             1) iterate over quadcopter objects
@@ -392,7 +389,7 @@ class QuadcopterObject(RobotariumCommunication):
         Returns:
             r (float): Roll
             p (float): Pitch
-            y (float): Yaw (currently just 0 here)
+            y (float): Yaw Rate (currently just 0 here)
             t (float): Thrust
 
         """

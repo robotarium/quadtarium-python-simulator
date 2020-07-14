@@ -14,7 +14,7 @@ def invert_diff_flat_output(x, thrust_hover=0):
 
     Args:
         x (ndarray): desired state of size (4,3)
-        thrust_hover (float): thrust required for hovering (TODO: is this correct?)
+        thrust_hover (float): amount of thrust needed to hover (#TODO:units?)
 
     Returns:
         roll (float):
