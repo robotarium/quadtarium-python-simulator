@@ -22,6 +22,10 @@ if __name__ == "__main__":
     N = 3
     # creates robotarium object, indicate if user would like to save data
     robotarium = robotarium_simulation_builder.RobotariumEnvironment(barriers=True, number_of_agents=N, save_data=False)
+    # if specific initial poses are desired, set robotarium.initial_poses (np.array of size Nx3)
+    # robotarium.initial_poses = ....
+    # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set
+    robotarium.build()
 
     # this code ensures that the agents are initially distributed around an ellipse
     xybound = np.array([-2.0, 2.0, -2.0, 2.0])
@@ -36,11 +40,7 @@ if __name__ == "__main__":
     # Flag of task completion
     flag = 0
 
-    # if specific initial poses are desired, set robotarium.initial_poses
-    # robotarium.initial_poses = np.array([[0.8, 0.7, -0.8]])
 
-    # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set
-    robotarium.build()
 
     t = 0
 
