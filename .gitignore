@@ -1,4 +1,4 @@
 .idea/*
-./utilities_sim/__pycache__/*
+*__pycache__*
 *.pyc
 .DS_Store
