@@ -262,8 +262,6 @@ class RobotariumEnvironment(object):
             u_safe (ndarray): Minimally altered inputs to guarantee safety (same size as u).
         """
 
-        if bds is None:
-            bds = np.array([[-0.8, -0.8, -1.0], [0.8, 0.8, 1.0]])
 
         if u:
             u = u.copy()
@@ -271,12 +269,9 @@ class RobotariumEnvironment(object):
             u = self.u
 
         Kb = self.Kb
-        print(Kb)
         N = len(u)
-        Ds = 0.3
-        Ds_bounds = 0.05
+        Ds = 0.1
         H = 2 * np.eye(3 * N)
-        # print("u :", u)
         f = -2 * np.reshape(np.hstack(u.values()), (3 * N, 1))
         A = np.empty((0, 3 * N))
         b = np.empty((0, 1))
@@ -290,7 +285,6 @@ class RobotariumEnvironment(object):
                 hd = sum(4 * pr ** 3 * prd)
                 hdd = sum(12 * pr ** 2 * prd ** 2 + 4 * pr ** 3 * prdd)
                 hddd  = sum(24*pr*prd**3 + 36*pr**2*prd*prdd + 4*pr**3*prddd)
-                # Lfh = sum(24*pr*prd**3 + 36*pr ** 2*prd*prdd)
                 Lfh = sum(24*pr*prd**3 + 36*pr**2*prd*prdd + 4*pr**3*prddd)
                 Lgh = 4 * pr ** 3 * np.array([1, 1, 1.0 / zscale])
                 Anew = np.zeros((3 * N,))
@@ -301,74 +295,41 @@ class RobotariumEnvironment(object):
                 b = np.vstack([b, bnew])
 
         # Robotarium Boundaries
-        gamma_bounds = 10**-0.5
+        if bds is None:
+            bds = np.array([[-0.8, -0.8, -1.0], [0.8, 0.8, 1.0]])
+
+        Ds_bounds = 0.05
 
         for i in range(N):
-            Anew = np.zeros((6, 3 * N))
-            bnew = np.zeros((6, 1))
+            Anew = np.zeros((3, 3 * N))  # np.zeros((6, 3 * N))
+            bnew = np.zeros((3, 1))  # np.zeros((6, 1))
 
-            print('Quadcopter {}'.format(i))
-            print('\t State:')
-            print(x[i])
-
-            # Negative Boundaries
-            pr = x[i][0, :] - bds[0, :] - Ds_bounds
+            # Both Boundaries (assuming symmetric)
+            pr = x[i][0, :]
             prd = x[i][1, :]
             prdd = x[i][2, :]
             prddd = x[i][3, :]
-            hs = gamma_bounds * pr ** 5
-            hds = gamma_bounds * 5 * pr ** 4 * prd
-            hdds = gamma_bounds * (20 * pr ** 3 * prd ** 2 + 5 * pr ** 4 * prdd)
-            hddds = gamma_bounds * (60 * pr ** 2 * prd ** 3 + 60 * pr **3 * prd * prdd + 5 * pr ** 4 * prddd)
+            hs = - pr ** 4 + (bds[1, :] - Ds_bounds) ** 4
+            hds = - 4 * pr ** 3 * prd
+            hdds = - 12 * pr ** 2 * prd ** 2 - 4 * pr ** 3 * prdd
+            hddds = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
 
+            Lfh = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
+            Lgh = - 4 * pr ** 3
 
-            Lfh = gamma_bounds * 60 * pr ** 2 * prd ** 3 + 60 * pr **3 * prd * prdd + 5 * pr ** 4 * prddd
-            Lgh = gamma_bounds * 5 * pr ** 4 * np.array([1, 1, 1.0])
-
-            Anew[0:3, 3 * i:3 * i + 3] = - np.diag(Lgh)
-            bnew[0:3] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
-
-            print('h = {}'.format(hs))
-            print('Lfh = {}'.format(Lfh))
-            print('Lgh = {}'.format(Lgh))
-
-            # Positive Boundaries
-            pr = -x[i][0, :] + bds[1, :] - Ds_bounds
-            prd = -x[i][1, :]
-            prdd = -x[i][2, :]
-            prddd = -x[i][3, :]
-            hs = pr ** 5
-            hds = 5 * pr ** 4 * prd
-            hdds = 20 * pr ** 3 * prd ** 2 + 5 * pr ** 4 * prdd
-            hddds = 60 * pr ** 2 * prd ** 3 + 60 * pr ** 3 * prd * prdd + 5 * pr ** 4 * prddd
-
-            Lfh = 60 * pr ** 2 * prd ** 3 + 60 * pr ** 3 * prd * prdd + 5 * pr ** 4 * prddd
-            Lgh = 5 * pr ** 4
-
-            Anew[3:6, 3 * i:3 * i + 3] = np.diag(Lgh)
-            bnew[3:6] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
+            Anew[:3, 3 * i:3 * i + 3] = - np.diag(Lgh)
+            bnew[:3] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
 
             A = np.vstack([A, Anew])
             b = np.vstack([b, bnew])
-
-            print('h = {}'.format(hs))
-            print('Lfh = {}'.format(Lfh))
-            print('Lgh = {}'.format(Lgh))
-
-            print('Anew = {}'.format(Anew))
-            print('bnew = {}'.format(bnew))
-
-
 
         G = np.vstack([A, -np.eye(3 * N), np.eye(3 * N)])
         amax = 1e4
         h = np.vstack([b, amax * np.ones((3 * N, 1)), amax * np.ones((3 * N, 1))])
         sol = solvers.qp(matrix(H), matrix(f), matrix(G), matrix(h))
 
-        print(G)
-        print(h)
+
         x = sol['x']
-        print(sol)
 
         for i in range(N):
             u[i] = np.reshape(x[3 * i:3 * i + 3], (1, 3))
@@ -376,7 +337,6 @@ class RobotariumEnvironment(object):
         if sol['status'] == 'unknown':
             raise Exception('Barriers Broke!')
 
-        print(u[0])
         return u
 
     def plot_robotarium(self):
