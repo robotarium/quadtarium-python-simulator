@@ -14,7 +14,7 @@ class RobotariumCommunication(object):
         self.first_flag = True
         self.sim_env = robotarium_sim_environment
         self.quadcopter_communicate = None
-        self.my_pose = None
+        self.pose = None
         self.orientation = np.array([])
         self.thrust_hover = 34000 # arbitrary value
 
@@ -42,9 +42,9 @@ class RobotariumCommunication(object):
 
     def set_pose(self, pose, sim_env, roll=0, pitch=0, yaw=0, thrust=0):
         self.quadcopter_communicate.update(sim_env, pose, roll, pitch, yaw)
-        self.my_pose = pose
+        self.pose = pose
         self.orientation = np.array([roll, pitch, yaw])
 
 
     def get_pose_and_orientation(self):
-        return self.my_pose, self.orientation
+        return self.pose, self.orientation

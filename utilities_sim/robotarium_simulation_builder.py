@@ -25,102 +25,115 @@ TIMEOUT_TIME = 30
 # 3x differentiable in order to generate the necessary states
 # to back out the control inputs from the differentially flat properties of the quadcopter dynamics.
 class RobotariumEnvironment(object):
-    def __init__(self, save_data=True, barriers=True):
-        self.number_of_agents = rand.randint(3, 10)
+    def __init__(self, number_of_agents=rand.randint(3, 10), save_data=True, barriers=True):
+
+        # High level parameters
+        self.number_of_agents = number_of_agents
+        self.robotarium_simulator_plot = None
+        self.barriers = barriers  # Bool indicating whether to ensure safety using CBFs
+        self.save_flag = save_data  # flag indicating whether to save the data relating to the experiment
+        self.count = 0  # experiment iteration count
+        solvers.options['show_progress'] = False  # verbose option for the CBF QP solver
+        # State related parameters
         self.initial_poses = np.array([])
-        self.poses = np.array([])
-        self.desired_poses = np.zeros((self.number_of_agents, 3))
-        self.desired_vels = np.zeros((self.number_of_agents, 3))
+        self.poses = np.array([])  # Chain of Integrator Model (xyz) state
+        self.desired_poses = np.zeros((self.number_of_agents, 3))  # User desired poses
         self.crazyflie_objects = {}
         self.time = time.time()
         self.x_state = dict()
-        self.vel_prev = dict()
-        self.des_vel_prev = dict()
-        self.xd = dict()
-        self.u = dict()
-        self.orientation_real = dict()
-        self.pose_real = dict()
-        self.dt = 0.03
-        self.count = 0
-        self.time_record = dict()
-        self.x_record = dict()
-        self.input_record = dict()
-        self.orientation_record = dict()
+        self.vel_prev = dict()  # for backstepping, vel_prev[i] = np.array((1,3))
+        self.des_vel_prev = dict()  # for backstepping
+        self.desired_vels = np.zeros((self.number_of_agents, 3))  # User desired velocities (used for backstepping)
+        self.u = dict()  # control inputs to the robots
+        self.orientation_real = dict()  # Actual orientation of the quadcopter
+        self.pose_real = dict()  # Actual State of the quadcopter
+        self.dt = 0.03  # time step size
+        # Data recording
+        self.time_record = dict()  # time data
+        self.x_record = dict()  # x data
+        self.input_record = dict()  # u data
+        self.orientation_record = dict()  # orientation data
+        # Matrices for integrator model used by CBFs
         self.AA = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
         self.bb = np.array([[0], [0], [0], [1]])
-        self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))
-        self.robotarium_simulator_plot = None
-        self.barriers = barriers
-        self.save_flag = save_data
-        solvers.options['show_progress'] = False
+        self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))  # Gains
+        self.bds = np.array([[-1.3, -1.3, -1.0], [1.3, 1.3, 1.0]])
+
 
     def get_quadcopter_poses(self):
+        """Get quadcopter poses.
+
+        Returns:
+            poses (ndarray): Array of size (N,3). x,y,z positions of the quadrotors.
+
+        """
         poses = np.zeros((self.number_of_agents, 3))
         for i in range(self.number_of_agents):
-            pose = self.crazyflie_objects[i].position
-            poses[i] = pose
+            poses[i] = self.crazyflie_objects[i].pose
         return poses
 
     def set_desired_poses(self, poses):
-        # sets desired goal points for all quadcopters
+        """Set the desired poses for the quadcopters.
+
+        Args:
+            poses (ndarray): Array of size (N,3).
+
+        Returns:
+`
+        """
+
         self.desired_poses = poses
 
-    def set_desired_vels(self, vels):
-        self.desired_vels = vels
-
     def build(self):
-        # builds robotarium simulator
-        # creates quadcopter objects for each quadcopter and plots each quadcopter
+        """Builds the robotarium object and creates quadcopter object (includes plotting) for each quadcopter.
+
+        Returns:
+
+        """
+
         try:
             assert self.number_of_agents > 0
-
         except AssertionError:
-            print("number of agents must be greater than 0!!")
-            self.number_of_agents = rand.randint(0, 10)
+            raise Exception("number of agents must be greater than 0!!")
 
         self.robotarium_simulator_plot = self.plot_robotarium()
+
+        # Initial poses (x,y,z) not specified by the user (Assign random poses)
         if len(self.initial_poses) == 0:
-            for i in range(self.number_of_agents):
-                self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, index=i)
-                # self.hover_quads_at_initial_poses()
-                self.vel_prev[i] = np.zeros((1, 3))
-                self.des_vel_prev[i] = np.zeros((1, 3))
-            self.poses = self.get_quadcopter_poses() + np.array([0, 0, -0.8])
-            for i in range(self.number_of_agents):
-                self.x_state[i] = np.zeros((4, 3))
-                self.x_state[i][0] = self.poses[i]
-            print("poses:", self.poses)
+            self.initial_poses = np.zeros((self.number_of_agents, 3))
+            self.initial_poses[:, 0] = (1.3 - (-1.3)) * np.random.sample(self.number_of_agents) + (-1.3)  # x
+            self.initial_poses[:, 1] = (1.3 - (-1.3)) * np.random.sample(self.number_of_agents) + (-1.3)  # y
 
-
-
-        else:
-            for i in range(self.number_of_agents):
-                self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, self.initial_poses[i], index=i)
-                self.poses = self.initial_poses
-                self.x_state[i] = np.zeros((4, 3))
-                self.x_state[i][0] = self.poses[i]
-                self.vel_prev[i] = np.zeros((1, 3))
-                self.des_vel_prev[i] = np.zeros((1, 3))
-
-
-
+        # Initialize object properties
+        for i in range(self.number_of_agents):
+            self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, self.initial_poses[i], index=i)
+            self.poses = self.initial_poses
+            self.x_state[i] = np.zeros((4, 3))
+            self.x_state[i][0] = self.poses[i]
+            self.vel_prev[i] = np.zeros((1, 3))
+            self.des_vel_prev[i] = np.zeros((1, 3))
 
     def hover_quads_at_initial_poses(self, takeoff_time=10.0):
+        """
+
+        Args:
+            takeoff_time (float):
+
+        Returns:
+
+        """
+
         reached_des_flag = np.zeros((self.number_of_agents))
         t0 = time.time()
         self.desired_poses = np.zeros((self.number_of_agents, 3))
         for i in range(self.number_of_agents):
-            if len(self.initial_poses) > 0:
-                self.desired_poses[i] = self.initial_poses[i]
-            else:
-                self.desired_poses[i] = np.array([self.poses[i][0], self.poses[i][1], -0.6])
-
+            self.desired_poses[i] = self.initial_poses[i]
             self.x_state[i] = np.zeros((4, 3))
             self.x_state[i][0] = self.poses[i]
 
         while np.sum(reached_des_flag) < self.number_of_agents:
             t = time.time()
-            s = min((t - t0) / takeoff_time, 1.0)
+            s = min((t - t0) / takeoff_time, 1.0)  # kind of a sudo-gain
             for i in range(self.number_of_agents):
                 reached_des_flag[i], self.poses[i] = self.crazyflie_objects[i].hover_bot(self.desired_poses[i], s, self.robotarium_simulator_plot)
             plt.pause(0.001)
@@ -132,117 +145,133 @@ class RobotariumEnvironment(object):
 
 
     def update_poses(self, velocities=False):
-        # while loop until all quads are at desired new poses
-        # iterates over quadcopter objects
-        # send desired points to quadcopters
-        # make interpolation points from desired point and make max velocity can fly at
-        # quadcopter updates dynamics from current point based on interpolation point
-        #do one iteration to get to that point, go to next quad
-        # update until desired poses are acquired and return flag for each quad that you are done
+        """Update the state of the quads. User specifies desired pose, at least 3 times differentiable trajectory will be
+        be computed to reach that desired pose. Here, only a single step is taken to reach the first point in the
+        computed trajectory computed by the spline. #TODO: is this correct?
+            1) iterate over quadcopter objects
+            2) send desired points to quads
+            3) make interpolation points from desired point and make max velocity can fly at
+            4) quadcopter updates dynamics from current points based on interpolation point
+            5) only computes a single iteration from the trajectory computed in the spline
+            6) one should call this function until desired poses are acquired which is signaled by the return flag
+
+        Args:
+            velocities (bool): Determines the control mode, either we give the velocities to the quads as commands or
+            next pose.
+
+        Returns:
+
+        """
+
         if velocities is True:
             for i in range(self.number_of_agents):
-                print("current: ", self.x_state[i])
                 desired_point = vel_back_step(self.x_state[i], self.vel_prev[i], self.desired_vels[i], self.des_vel_prev[i])
                 self.u[i] = desired_point
-                print("u: ", self.u[i])
-                # print("norm of u:", np.linalg.norm(self.u[i]))
-                if np.linalg.norm(self.u[i]) > 1e4:
-                    self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
-
-            if self.barriers is True:
-                self.u = self.Safe_Barrier_3D(self.x_state, self.u)
-
-            for i in range(self.number_of_agents):
-                #print("u shape: ", self.u[i].shape)
-                #print("b: ", self.bb.shape)
-                self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
-                self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
-                self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
-                self.poses[i] = self.x_state[i][0, :]
-                self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].update_pose_and_orientation()
-                self.vel_prev[i] = self.x_state[i][1, :]
-                self.des_vel_prev[i] = self.desired_vels[i]
-            plt.pause(0.001)
-            self.time_record[self.count] = str(self.run_time())
-            self.x_record[self.count] = self.pose_real
-            self.orientation_record[self.count] = self.orientation_real
-            self.input_record[self.count] = self.u.copy()
-            self.count += 1
         else:
             desired_trajs = dict()
-            index = dict()
-            end_points = np.array([[]])
-
             for i in range(self.number_of_agents):
-                desired_trajs[i] = np.zeros((4, 3))
-                if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:
+                if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:  # TODO: Is this ever necessary?
+                    desired_trajs[i] = np.zeros((4, 3))
                     desired_trajs[i][0, :] = self.desired_poses[i]
-                    desired_trajs[i] = np.stack((desired_trajs[i], desired_trajs[i]),axis=0)
+                    desired_trajs[i] = np.stack((desired_trajs[i], desired_trajs[i]), axis=0)
                 else:
                     desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
-                if i == 0:
-                    end_points = np.array([desired_trajs[i][-1][0, :]])
-                else:
-                    end_points = np.append(end_points, np.array([desired_trajs[i][-1][0, :]]), axis=0)
-                index[i] = 0
 
+            # The desired trajectory for each quadrotor is of shape (n_spline, 4, 3), where n is the number of points
+            # in the spline, 4 is the number of derivatives (size of the integrator state) and 3 is for x, y, z.
+            # So what we are doing here is generating the spline, then synthesizing the control necessary to follow
+            # the first point of the trajectory generated by the spline.
             for i in range(self.number_of_agents):
-                self.u[i] = desired_trajs[i][index[i]][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][index[i]])
-                if np.linalg.norm(self.u[i]) > 1e4:
-                    self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
-            if self.barriers == True:
-                self.u = self.Safe_Barrier_3D(self.x_state, self.u)
+                self.u[i] = desired_trajs[i][0][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][0])
 
-            for i in range(self.number_of_agents):
-                self.xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
-                self.x_state[i] = self.x_state[i] + self.xd[i]*self.dt
-                self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
-                self.poses[i] = self.x_state[i][0, :]
-            plt.pause(0.02)
-            self.time_record[self.count] = str(self.run_time())
-            self.x_record[self.count] = self.pose_real
-            self.orientation_record[self.count] = self.orientation_real
-            self.input_record[self.count] = self.u.copy()
-            self.count += 1
+        # Threshold velocities
+        for i in range(self.number_of_agents):
+            if np.linalg.norm(self.u[i]) > 1e4:
+                self.u[i] = (self.u[i] / np.linalg.norm(self.u[i])) * 1e4
 
+        # Ensure Safety using Barriers Functions
+        if self.barriers is True:
+            self.u = self.Safe_Barrier_3D(self.x_state, self.u)
 
+        # Update object properties
+        for i in range(self.number_of_agents):
+            xd = dict()
+            xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
+            self.x_state[i] = self.x_state[i] + xd[i]*self.dt
+            self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
+            self.poses[i] = self.x_state[i][0, :]
+            self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
+            self.vel_prev[i] = self.x_state[i][1, :]
+            self.des_vel_prev[i] = self.desired_vels[i]
 
+        # Data recording
+        plt.pause(0.02)
+        self.time_record[self.count] = str(self.run_time())
+        self.x_record[self.count] = self.pose_real
+        self.orientation_record[self.count] = self.orientation_real
+        self.input_record[self.count] = self.u.copy()
+
+        self.count += 1
 
     def check_timeout(self):
-        # on the robotarium, programs will timeout after 5 minutes
+        """Check if the experiment ran longer than TIMEOUT_TIME (5 minutes by default).
+
+        Returns:
+            TIMEOUT_FLAG (bool): True if experiment ran longer than TIMEOUT_TIME
+
+        """
+
+        global TIMEOUT_FLAG, TIMEOUT_TIME
         if self.run_time() > TIMEOUT_TIME:
-            global TIMEOUT_FLAG
             TIMEOUT_FLAG = True
-            return TIMEOUT_FLAG
-        else:
-            return TIMEOUT_FLAG
+        return TIMEOUT_FLAG
 
     def run_time(self):
+        """Returns how long the experiment has been running for.
+
+        Returns:
+            time_now (float): Time in secs since the start of the experiment.
+
+        """
         time_now = time.time() - self.time
         return time_now
 
     def save_data(self):
-        # currently just saves time, pose, oreintation that we send to the quadcopter as a pickle file
+        """Saves the experiment data (time, poses, orientation and input) into a pickle file.
+
+        Returns:
+
+        """
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
         file_n = 'quads_robotarium_'+ time_stamp +'.pckl'
         arrays = [self.time_record, self.x_record, self.orientation_real, self.input_record]
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file)
 
-    def Safe_Barrier_3D(self, x, u=None, accept_u=True):
-        '''Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
-        A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh. '''
-        Kb = self.Kb
-        if accept_u is True:
+    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, bds=None):
+        """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
+        A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh.
+
+        Args:
+            x (ndarray): State of the robots of size (?,?,?)
+            u (dict): User specified desired jerks (x,y,z), keys are quad indices and values are of size (3,)
+            zscale (float): Scaling of the z-axis
+            gamma (float): Barrier Gain
+
+        Returns:
+            u_safe (ndarray): Minimally altered inputs to guarantee safety (same size as u).
+        """
+
+
+        if u:
             u = u.copy()
         else:
             u = self.u
+
+        Kb = self.Kb
         N = len(u)
-        zscale = 3
-        gamma = 5e-1
-        Ds = 0.3
+        Ds = 0.1
         H = 2 * np.eye(3 * N)
-        # print("u :", u)
         f = -2 * np.reshape(np.hstack(u.values()), (3 * N, 1))
         A = np.empty((0, 3 * N))
         b = np.empty((0, 1))
@@ -256,7 +285,6 @@ class RobotariumEnvironment(object):
                 hd = sum(4 * pr ** 3 * prd)
                 hdd = sum(12 * pr ** 2 * prd ** 2 + 4 * pr ** 3 * prdd)
                 hddd  = sum(24*pr*prd**3 + 36*pr**2*prd*prdd + 4*pr**3*prddd)
-                # Lfh = sum(24*pr*prd**3 + 36*pr ** 2*prd*prdd)
                 Lfh = sum(24*pr*prd**3 + 36*pr**2*prd*prdd + 4*pr**3*prddd)
                 Lgh = 4 * pr ** 3 * np.array([1, 1, 1.0 / zscale])
                 Anew = np.zeros((3 * N,))
@@ -266,17 +294,59 @@ class RobotariumEnvironment(object):
                 A = np.vstack([A, Anew])
                 b = np.vstack([b, bnew])
 
+        # Robotarium Boundaries
+        if bds is None:
+            bds = np.array([[-0.8, -0.8, -1.0], [0.8, 0.8, 1.0]])
+
+        Ds_bounds = 0.05
+
+        for i in range(N):
+            Anew = np.zeros((3, 3 * N))  # np.zeros((6, 3 * N))
+            bnew = np.zeros((3, 1))  # np.zeros((6, 1))
+
+            # Both Boundaries (assuming symmetric)
+            pr = x[i][0, :]
+            prd = x[i][1, :]
+            prdd = x[i][2, :]
+            prddd = x[i][3, :]
+            hs = - pr ** 4 + (bds[1, :] - Ds_bounds) ** 4
+            hds = - 4 * pr ** 3 * prd
+            hdds = - 12 * pr ** 2 * prd ** 2 - 4 * pr ** 3 * prdd
+            hddds = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
+
+            Lfh = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
+            Lgh = - 4 * pr ** 3
+
+            Anew[:3, 3 * i:3 * i + 3] = - np.diag(Lgh)
+            bnew[:3] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
+
+            A = np.vstack([A, Anew])
+            b = np.vstack([b, bnew])
+
         G = np.vstack([A, -np.eye(3 * N), np.eye(3 * N)])
         amax = 1e4
         h = np.vstack([b, amax * np.ones((3 * N, 1)), amax * np.ones((3 * N, 1))])
         sol = solvers.qp(matrix(H), matrix(f), matrix(G), matrix(h))
+
+
         x = sol['x']
+
         for i in range(N):
             u[i] = np.reshape(x[3 * i:3 * i + 3], (1, 3))
+
+        if sol['status'] == 'unknown':
+            raise Exception('Barriers Broke!')
+
         return u
 
     def plot_robotarium(self):
-        # plot environment
+        """Initialize plot of the robotarium environment
+
+        Returns:
+            ax (Dim3.Axes3D): Robotarium plot
+
+        """
+
         fig = plt.figure()
         ax = Dim3.Axes3D(fig)
         ax.set_aspect('equal')
@@ -291,9 +361,10 @@ class RobotariumEnvironment(object):
         return ax
 
 
-# quadcopter object created for each quadcopter in order to update
-# dynamics, plot, etc.
 class QuadcopterObject(RobotariumCommunication):
+    """Quadcopter object created for each quadcopter in order to update dynamics, plot, etc...
+    """
+
     def __init__(self, robotarium_simulator, initial_pose=None, index=0):
         self.position = np.array([])
         self.orientation = np.array([])
@@ -307,34 +378,58 @@ class QuadcopterObject(RobotariumCommunication):
         else:
             self.my_pose, self.orientation = self.set_init_pose(initial_pose)
             self.thrust_hover = self.thrust_hover
-        self.update_pose_and_orientation()
 
     def hover_bot(self, hover_point, s, sim_env):
-        next_pos = np.zeros((3))
-        dx = hover_point[0] - self.position[0]
-        dy = hover_point[1] - self.position[1]
-        dz = hover_point[2] - self.position[2]
-        next_pos[0] = self.position[0] + s*dx
-        next_pos[1] = self.position[1] + s*dy
-        next_pos[2] = self.position[2] + s*dz
+        """
+
+        Args:
+            hover_point (ndarray): Hover points as x,y,z
+            s (float): time step
+            sim_env: simulation environment
+
+        Returns:
+            position (ndarray): next position to go as x,y,z
+
+        """
+        dx = hover_point - self.pose  # x,y,z diff
+        next_pos = self.pose + s*dx
         self.set_pose(next_pos, sim_env)
-        self.position = next_pos
-        error = np.linalg.norm((hover_point - self.position))
+        self.pose = next_pos
+        error = np.linalg.norm((hover_point - self.pose))
         if error < 0.1:
-            return 1, self.position
+            return 1, self.pose
         else:
-            return 0, self.position
+            return 0, self.pose
 
     def go_to(self, desired_pose, sim_env):
+        """Go to goal.
+
+        Args:
+            desired_pose (ndarray):
+            sim_env (object): simulation environment (robotarium object)
+
+        Returns:
+
+        """
         roll, pitch, yaw, thrust = self.set_diff_flat_term(desired_pose)
         self.set_pose(desired_pose[0, :], sim_env, roll, pitch, yaw)
-        self.update_pose_and_orientation()
+        self.get_pose_and_orientation()
 
 
     def set_diff_flat_term(self, goal_pose):
+        """Obtain roll, pitch, yaw, thrust for going to a desired position.
+
+        Args:
+            goal_pose (ndarray): Desired pose of size (4, 3)
+
+        Returns:
+            r (float): Roll
+            p (float): Pitch
+            y (float): Yaw Rate (currently just 0 here)
+            t (float): Thrust
+
+        """
         r, p, y, t = invert_diff_flat_output(goal_pose, thrust_hover=self.thrust_hover)
         return r, p, y, t
 
-    def update_pose_and_orientation(self):
-        self.position, self.orientation = self.get_pose_and_orientation()
-        return self.position, self.orientation
+
