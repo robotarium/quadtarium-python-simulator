@@ -170,7 +170,7 @@ class RobotariumEnvironment(object):
         else:
             desired_trajs = dict()
             for i in range(self.number_of_agents):
-                if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:  # TODO: Is this ever necessary?
+                if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:
                     desired_trajs[i] = np.zeros((4, 3))
                     desired_trajs[i][0, :] = self.desired_poses[i]
                     desired_trajs[i] = np.stack((desired_trajs[i], desired_trajs[i]), axis=0)
@@ -405,7 +405,11 @@ class QuadcopterObject(RobotariumCommunication):
         """Go to goal.
 
         Args:
+<<<<<<< HEAD
             desired_pose (ndarray):
+=======
+            desired_pose (ndarray): Array of size 4 by 3 indicating the desired pose
+>>>>>>> master
             sim_env (object): simulation environment (robotarium object)
 
         Returns:
@@ -431,5 +435,3 @@ class QuadcopterObject(RobotariumCommunication):
         """
         r, p, y, t = invert_diff_flat_output(goal_pose, thrust_hover=self.thrust_hover)
         return r, p, y, t
-
-
