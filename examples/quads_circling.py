@@ -1,6 +1,5 @@
 # !/usr/bin/env python
 from utilities_sim.robotarium_simulation_builder import RobotariumEnvironment
-from utilities_sim.interpolation import spline_interpolation, extract_points, parameterize_time_waypoint_generator
 import numpy as np
 from math import cos, sin
 from control import acker
@@ -92,11 +91,11 @@ if __name__ == "__main__":
             for i in range(robotarium.number_of_agents):
                 xd[i] = np.dot(A, x_state[i]) + np.dot(b, u[i])
                 x_state[i] = x_state[i] + xd[i]*dt
-                print("x satate: ", x_state)
+                #print("x satate: ", x_state)
                 desired_poses[i] = x_state[i][0, :]
 
             # set desired poses (must call)
-            print("des poses: ", desired_poses)
+            #print("des poses: ", desired_poses)
             robotarium.set_desired_poses(desired_poses)
 
 

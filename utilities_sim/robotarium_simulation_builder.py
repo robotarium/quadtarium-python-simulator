@@ -57,7 +57,7 @@ class RobotariumEnvironment(object):
         self.AA = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
         self.bb = np.array([[0], [0], [0], [1]])
         self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))  # Gains
-        self.bds = np.array([[-1.3, -1.3, -1.0], [1.3, 1.3, 1.0]])
+        self.bds = np.array([[-1.3, -1.3, -1.0], [1.3, 1.3, 1.0]])  # 2x3 matrix, bds[0] and bds[1] are neg and pos x,y,z bounds respectively.
 
 
     def get_quadcopter_poses(self):
@@ -248,7 +248,7 @@ class RobotariumEnvironment(object):
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file)
 
-    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, bds=None):
+    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1):
         """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
         A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh.
 
@@ -270,7 +270,7 @@ class RobotariumEnvironment(object):
 
         Kb = self.Kb
         N = len(u)
-        Ds = 0.1
+        Ds = 0.3
         H = 2 * np.eye(3 * N)
         f = -2 * np.reshape(np.hstack(u.values()), (3 * N, 1))
         A = np.empty((0, 3 * N))
@@ -295,8 +295,7 @@ class RobotariumEnvironment(object):
                 b = np.vstack([b, bnew])
 
         # Robotarium Boundaries
-        if bds is None:
-            bds = np.array([[-0.8, -0.8, -1.0], [0.8, 0.8, 1.0]])
+        bds = self.bds
 
         Ds_bounds = 0.05
 
@@ -320,8 +319,8 @@ class RobotariumEnvironment(object):
             Anew[:3, 3 * i:3 * i + 3] = - np.diag(Lgh)
             bnew[:3] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
 
-            A = np.vstack([A, Anew])
-            b = np.vstack([b, bnew])
+            #A = np.vstack([A, Anew])
+            #b = np.vstack([b, bnew])
 
         G = np.vstack([A, -np.eye(3 * N), np.eye(3 * N)])
         amax = 1e4
