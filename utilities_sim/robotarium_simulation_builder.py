@@ -7,16 +7,15 @@ from control import acker
 from cvxopt import matrix, solvers
 import time
 import pickle
-from utilities_sim.robotarium_communication_interface import RobotariumCommunication
-from utilities_sim.actuation import invert_diff_flat_output, vel_back_step, gen_splines
-
+from utilities_sim.actuation import vel_back_step, gen_splines
+from utilities_sim.quadcopter_model import QuadcopterObject
 
 TIMEOUT_FLAG = False
 TIMEOUT_TIME = 30
 
 ''' name: Robotarium Simulation File
-    author: Christopher Banks
-    date: 09/15/2019
+    authors: Christopher Banks & Yousef Emam
+    date: 09/08/2020
     description: Contains files for simulating quadcopter (QuadcopterObject) and quadcopter dynamics.'''
 
 
@@ -47,7 +46,7 @@ class RobotariumEnvironment(object):
         self.u = dict()  # control inputs to the robots
         self.orientation_real = dict()  # Actual orientation of the quadcopter
         self.pose_real = dict()  # Actual State of the quadcopter
-        self.dt = 0.03  # time step size
+        self.dt = 0.02  # time step size
         # Data recording
         self.time_record = dict()  # time data
         self.x_record = dict()  # x data
@@ -106,7 +105,7 @@ class RobotariumEnvironment(object):
 
         # Initialize object properties
         for i in range(self.number_of_agents):
-            self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, self.initial_poses[i], index=i)
+            self.crazyflie_objects[i] = QuadcopterObject(self.robotarium_simulator_plot, self.initial_poses[i], index=i, dt=self.dt)
             self.poses = self.initial_poses
             self.x_state[i] = np.zeros((4, 3))
             self.x_state[i][0] = self.poses[i]
@@ -177,6 +176,7 @@ class RobotariumEnvironment(object):
                 else:
                     desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
 
+
             # The desired trajectory for each quadrotor is of shape (n_spline, 4, 3), where n is the number of points
             # in the spline, 4 is the number of derivatives (size of the integrator state) and 3 is for x, y, z.
             # So what we are doing here is generating the spline, then synthesizing the control necessary to follow
@@ -198,10 +198,12 @@ class RobotariumEnvironment(object):
             xd = dict()
             xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
             self.x_state[i] = self.x_state[i] + xd[i]*self.dt
-            self.crazyflie_objects[i].go_to(self.x_state[i], self.robotarium_simulator_plot)
+            self.crazyflie_objects[i].go_to_2(self.robotarium_simulator_plot, self.x_state[i], desired_orientation=None)
             self.poses[i] = self.x_state[i][0, :]
             self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
             self.vel_prev[i] = self.x_state[i][1, :]
+            # self.x_state[i][0] = self.pose_real[i]
+            # self.x_state[i][1] = self.crazyflie_objects[i].state[6:9]
             self.des_vel_prev[i] = self.desired_vels[i]
 
         # Data recording
@@ -319,8 +321,8 @@ class RobotariumEnvironment(object):
             Anew[:3, 3 * i:3 * i + 3] = - np.diag(Lgh)
             bnew[:3] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
 
-            #A = np.vstack([A, Anew])
-            #b = np.vstack([b, bnew])
+            A = np.vstack([A, Anew])
+            b = np.vstack([b, bnew])
 
         G = np.vstack([A, -np.eye(3 * N), np.eye(3 * N)])
         amax = 1e4
@@ -349,88 +351,14 @@ class RobotariumEnvironment(object):
         fig = plt.figure()
         ax = Dim3.Axes3D(fig)
         ax.set_aspect('equal')
-        ax.invert_zaxis()
+        #ax.invert_zaxis()
         ax.set_xlim3d([-1.3, 1.3])
         ax.set_xlabel('x', fontsize=10)
         ax.set_ylim3d([-1.3, 1.3])
         ax.set_ylabel('y', fontsize=10)
-        ax.set_zlim3d([0, -1.8])
+        ax.set_zlim3d([-1.8, 0])
         ax.set_zlabel('z', fontsize=10)
         ax.tick_params(labelsize=10)
         return ax
 
 
-class QuadcopterObject(RobotariumCommunication):
-    """Quadcopter object created for each quadcopter in order to update dynamics, plot, etc...
-    """
-
-    def __init__(self, robotarium_simulator, initial_pose=None, index=0):
-        self.position = np.array([])
-        self.orientation = np.array([])
-        self.velocity = np.array([])
-        self.thrust_hover = 0
-
-        super().__init__(robotarium_simulator, str(index))
-        if initial_pose is None:
-            self.my_pose, self.orientation = self.get_init_pose()
-            self.thrust_hover = self.thrust_hover
-        else:
-            self.my_pose, self.orientation = self.set_init_pose(initial_pose)
-            self.thrust_hover = self.thrust_hover
-
-    def hover_bot(self, hover_point, s, sim_env):
-        """
-
-        Args:
-            hover_point (ndarray): Hover points as x,y,z
-            s (float): time step
-            sim_env: simulation environment
-
-        Returns:
-            position (ndarray): next position to go as x,y,z
-
-        """
-        dx = hover_point - self.pose  # x,y,z diff
-        next_pos = self.pose + s*dx
-        self.set_pose(next_pos, sim_env)
-        self.pose = next_pos
-        error = np.linalg.norm((hover_point - self.pose))
-        if error < 0.1:
-            return 1, self.pose
-        else:
-            return 0, self.pose
-
-    def go_to(self, desired_pose, sim_env):
-        """Go to goal.
-
-        Args:
-<<<<<<< HEAD
-            desired_pose (ndarray):
-=======
-            desired_pose (ndarray): Array of size 4 by 3 indicating the desired pose
->>>>>>> master
-            sim_env (object): simulation environment (robotarium object)
-
-        Returns:
-
-        """
-        roll, pitch, yaw, thrust = self.set_diff_flat_term(desired_pose)
-        self.set_pose(desired_pose[0, :], sim_env, roll, pitch, yaw)
-        self.get_pose_and_orientation()
-
-
-    def set_diff_flat_term(self, goal_pose):
-        """Obtain roll, pitch, yaw, thrust for going to a desired position.
-
-        Args:
-            goal_pose (ndarray): Desired pose of size (4, 3)
-
-        Returns:
-            r (float): Roll
-            p (float): Pitch
-            y (float): Yaw Rate (currently just 0 here)
-            t (float): Thrust
-
-        """
-        r, p, y, t = invert_diff_flat_output(goal_pose, thrust_hover=self.thrust_hover)
-        return r, p, y, t

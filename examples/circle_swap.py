@@ -28,7 +28,7 @@ if __name__ == "__main__":
     robotarium.build()
 
     # this code ensures that the agents are initially distributed around an ellipse
-    xybound = 2.0 * np.array([-1, 1, -1, 1])
+    xybound = 1.0 * np.array([-1, 1, -1, 1])
     p_theta = np.arange(1, 2 * N, 2) / (2 * N) * 2 * np.pi
     p_circ = np.array([[xybound[1] * np.cos(p_theta), xybound[1] * np.cos(p_theta + np.pi)],
                        [xybound[3] * np.sin(p_theta), xybound[3] * np.sin(p_theta + np.pi)]])
@@ -36,6 +36,9 @@ if __name__ == "__main__":
 
     # Initialize Goal
     x_goal = p_circ[:, :, 0]
+
+    robotarium.robotarium_simulator_plot.scatter3D(p_circ[:, 0, 0], p_circ[:, 1, 0], p_circ[:, 2, 0], cmap='Greens')
+    robotarium.robotarium_simulator_plot.scatter3D(p_circ[:, 0, 1], p_circ[:, 1, 1], p_circ[:, 2, 1], cmap='Greens')
 
     # Flag of task completion
     flag = 0

@@ -103,6 +103,7 @@ class QuadPlotObject(object):
         return R
 
     def update(self, ax, pos, r, p, y=0, color='k--'):
+
         R = self.RotMat(r, p, y)
         L = 0.15
         x_direction = np.array([[pos[0] , pos[0]+L*R[0,0]], [pos[1] , pos[1]+L*R[1,0]], [pos[2] , pos[2]+L*R[2,0]]])
@@ -129,6 +130,7 @@ class QuadPlotObject(object):
         self.disk3._segment3d += np.kron(np.ones((self.disk3._segment3d[:,0].size,1)), pos)
         self.disk4._segment3d += np.kron(np.ones((self.disk4._segment3d[:,0].size,1)), pos)
         self.pos = pos
+
         self.M = newM
 
         # update trajectory
