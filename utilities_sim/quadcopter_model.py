@@ -67,19 +67,6 @@ class QuadcopterObject(RobotariumCommunication):
         else:
             return 0, self.pose
 
-    def go_to(self, desired_pose, sim_env):
-        """Go to goal.
-
-        Args:
-            desired_pose (ndarray): Array of size 4 by 3 indicating the desired pose
-            sim_env (object): simulation environment (robotarium object)
-
-        Returns:
-
-        """
-        roll, pitch, yaw, thrust = self.set_diff_flat_term(desired_pose)
-        self.set_pose(desired_pose[0, :], sim_env, roll, pitch, yaw)
-
 
     def set_diff_flat_term(self, goal_pose):
         """Obtain roll, pitch, yaw, thrust for going to a desired position.
@@ -97,7 +84,7 @@ class QuadcopterObject(RobotariumCommunication):
         r, p, y, t = invert_diff_flat_output(goal_pose, thrust_hover=self.thrust_hover)
         return r, p, y, t
 
-    def go_to_2(self,  sim_env, desired_pose, desired_orientation=None):
+    def go_to(self, desired_pose, desired_orientation=None):
         """Obtains u_1, u_2, u_3, u_4 for going to a desired pose.
 
         Args:
@@ -110,12 +97,8 @@ class QuadcopterObject(RobotariumCommunication):
 
         # Obtain Control Inputs needed to follow desired trajectory
         u = self.obtain_desired_inputs(desired_pose, desired_orientation=None)  # TODO: Account for desired Orientation
-        # Obtain Next State
-        state = self.forward_model(u)
-        # Update Properties of Quadcopter (self) object
-        self.set_state(state, sim_env)
 
-        return state
+        return u
 
     def obtain_desired_inputs(self, desired_pose, desired_orientation=None):
 
@@ -160,17 +143,13 @@ class QuadcopterObject(RobotariumCommunication):
         self.i_error_m = np.clip(self.i_error_m + -eR * self.dt,  -self.i_range_m, self.i_range_m)
 
         # Compute Moments u[2,3,4] using eR and eOmega
-        u[1] = -self.kR[0] * eR[0] + self.kw[0] * ew[0] + self.ki_m[0] * self.i_error_m[0]  #+ kd_omega_rp * err_d_roll
-        u[2] = -self.kR[1] * eR[1] + self.kw[1] * ew[1] + self.ki_m[1] * self.i_error_m[1]  #+ kd_omega_rp * err_d_pitch
+        u[1] = -self.kR[0] * eR[0] + self.kw[0] * ew[0] + self.ki_m[0] * self.i_error_m[0]
+        u[2] = -self.kR[1] * eR[1] + self.kw[1] * ew[1] + self.ki_m[1] * self.i_error_m[1]
         u[3] = -self.kR[2] * eR[2] + self.kw[2] * ew[2] + self.ki_m[2] * self.i_error_m[2]
 
         return u
 
-    def forward_model(self, u):
-
-        # u = np.zeros(4)
-        # u[0] = np.linalg.norm(self.get_Rwb().T[:, 2] * self.m * self.g)
-        # u[3] = 2e-5
+    def forward_model(self, sim_env, u):
 
         alpha = self.state[3:6]  # Euler Angles of body (phi,theta,psi)
         vel = self.state[6:9]  # Linear Velocity of body (u,v,w)
@@ -193,6 +172,9 @@ class QuadcopterObject(RobotariumCommunication):
         state_d[9:12] = np.matmul(self.I_moment_inv, np.cross(-omega_bw, np.matmul(self.I_moment, omega_bw)) + u[1:])
 
         next_state = self.state + self.dt * state_d
+
+        # Update Properties of Quadcopter (self) object
+        self.set_state(next_state, sim_env)
 
         return next_state
 
@@ -254,3 +236,16 @@ class QuadcopterObject(RobotariumCommunication):
         )
 
         return x_hat
+
+    # def go_to_old(self, desired_pose, sim_env):
+    #     """Go to goal.
+    #
+    #     Args:
+    #         desired_pose (ndarray): Array of size 4 by 3 indicating the desired pose
+    #         sim_env (object): simulation environment (robotarium object)
+    #
+    #     Returns:
+    #
+    #     """
+    #     roll, pitch, yaw, thrust = self.set_diff_flat_term(desired_pose)
+    #     self.set_pose(desired_pose[0, :], sim_env, roll, pitch, yaw)

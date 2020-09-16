@@ -3,6 +3,7 @@ import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as Dim3
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from control import acker
 from cvxopt import matrix, solvers
 import time
@@ -68,7 +69,7 @@ class RobotariumEnvironment(object):
         """
         poses = np.zeros((self.number_of_agents, 3))
         for i in range(self.number_of_agents):
-            poses[i] = self.crazyflie_objects[i].pose
+            poses[i], _ = self.crazyflie_objects[i].get_pose_and_orientation()
         return poses
 
     def set_desired_poses(self, poses):
@@ -198,12 +199,11 @@ class RobotariumEnvironment(object):
             xd = dict()
             xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
             self.x_state[i] = self.x_state[i] + xd[i]*self.dt
-            self.crazyflie_objects[i].go_to_2(self.robotarium_simulator_plot, self.x_state[i], desired_orientation=None)
+            u_moments = self.crazyflie_objects[i].go_to(self.x_state[i], desired_orientation=None)
+            self.crazyflie_objects[i].forward_model(self.robotarium_simulator_plot, u_moments)
             self.poses[i] = self.x_state[i][0, :]
             self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
             self.vel_prev[i] = self.x_state[i][1, :]
-            # self.x_state[i][0] = self.pose_real[i]
-            # self.x_state[i][1] = self.crazyflie_objects[i].state[6:9]
             self.des_vel_prev[i] = self.desired_vels[i]
 
         # Data recording
@@ -336,11 +336,11 @@ class RobotariumEnvironment(object):
             u[i] = np.reshape(x[3 * i:3 * i + 3], (1, 3))
 
         if sol['status'] == 'unknown':
-            raise Exception('Barriers Broke!')
+            raise Warning('Control Barrier Function QP could not be solved.')
 
         return u
 
-    def plot_robotarium(self):
+    def plot_robotarium(self, d_buffer=0.1):
         """Initialize plot of the robotarium environment
 
         Returns:
@@ -350,15 +350,42 @@ class RobotariumEnvironment(object):
 
         fig = plt.figure()
         ax = Dim3.Axes3D(fig)
+
+        # Set Axes
         ax.set_aspect('equal')
-        #ax.invert_zaxis()
-        ax.set_xlim3d([-1.3, 1.3])
+        ax.set_xlim3d([self.bds[0][0] - d_buffer, self.bds[1][0] + d_buffer])
         ax.set_xlabel('x', fontsize=10)
-        ax.set_ylim3d([-1.3, 1.3])
+        ax.set_ylim3d([self.bds[0][1] - d_buffer, self.bds[1][1] + d_buffer])
         ax.set_ylabel('y', fontsize=10)
-        ax.set_zlim3d([-1.8, 0])
+        ax.set_zlim3d([self.bds[0][2] - d_buffer, self.bds[1][2] + d_buffer])
         ax.set_zlabel('z', fontsize=10)
         ax.tick_params(labelsize=10)
-        return ax
 
+        # Plot Boundary
+        # vertices of a pyramid
+        v = np.zeros((8, 3))
+        for i in range(2):
+            for j in range(2):
+                for k in range(2):
+                    v[4*i+2*j+k] = [self.bds[i, 1], self.bds[j, 1], self.bds[k, 2]]
+
+        # Plot Vertices
+        ax.scatter3D(v[:, 0], v[:, 1], v[:, 2])
+
+        # Generate faces
+        faces = []
+        for i in range(5):
+            for j in range(i+1, 6):
+                for k in range(j+1, 7):
+                    for l in range(k+1, 8):
+                        if np.any(np.all(v[[i, j, k, l], :] == v[[i], :], 0)):
+                            faces.append([v[l], v[k], v[i], v[j]])
+
+        # Plot Faces
+        face_color = [0.5, 0.5, 1]  # alternative: matplotlib.colors.rgb2hex([0.5, 0.5, 1])
+        collection = Poly3DCollection(faces, linewidths=1, edgecolors=face_color, alpha=0.05, facecolors=None)
+        collection.set_facecolor(face_color)
+        ax.add_collection3d(collection)
+
+        return ax
 
