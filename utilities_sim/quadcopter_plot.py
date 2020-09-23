@@ -75,7 +75,8 @@ class QuadPlotObject(object):
         L = 0.15
         x_direction = np.array([[initpos[0] , initpos[0]+L*R[0,0]], [initpos[1] , initpos[1]+L*R[1,0]], [initpos[2] , initpos[2]+L*R[2,0]]])
         y_direction = np.array([[initpos[0] , initpos[0]+L*R[0,1]], [initpos[1] , initpos[1]+L*R[1,1]], [initpos[2] , initpos[2]+L*R[2,1]]])
-        z_direction = np.array([[initpos[0] , initpos[0]+L*R[0,2]], [initpos[1] , initpos[1]+L*R[1,2]], [initpos[2] , initpos[2]+L*R[2,2]]])
+        z_direction = np.array([[initpos[0] , initpos[0]-L*R[0,2]], [initpos[1] , initpos[1]-L*R[1,2]], [initpos[2] ,
+                                                                                                         initpos[2]-L*R[2,2]]])
         self.x_dir_visual = ax.plot(x_direction[0, :], x_direction[1, :], x_direction[2, :], 'r', alpha=min(0.6, trans))[0]
         self.y_dir_visual = ax.plot(y_direction[0, :], y_direction[1, :], y_direction[2, :], 'g', alpha=min(0.6, trans))[0]
         self.z_dir_visual = ax.plot(z_direction[0, :], z_direction[1, :], z_direction[2, :], 'b', alpha=min(0.6, trans))[0]
@@ -108,7 +109,7 @@ class QuadPlotObject(object):
         L = 0.15
         x_direction = np.array([[pos[0] , pos[0]+L*R[0,0]], [pos[1] , pos[1]+L*R[1,0]], [pos[2] , pos[2]+L*R[2,0]]])
         y_direction = np.array([[pos[0] , pos[0]+L*R[0,1]], [pos[1] , pos[1]+L*R[1,1]], [pos[2] , pos[2]+L*R[2,1]]])
-        z_direction = np.array([[pos[0] , pos[0]+L*R[0,2]], [pos[1] , pos[1]+L*R[1,2]], [pos[2] , pos[2]+L*R[2,2]]])
+        z_direction = np.array([[pos[0] , pos[0]-L*R[0,2]], [pos[1] , pos[1]-L*R[1,2]], [pos[2] , pos[2]-L*R[2,2]]])
         self.x_dir_visual.set_data(x_direction[0, :], x_direction[1, :])
         self.x_dir_visual.set_3d_properties(x_direction[2, :])
         self.y_dir_visual.set_data(y_direction[0, :], y_direction[1, :])

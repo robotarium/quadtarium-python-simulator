@@ -37,27 +37,30 @@ class RobotariumEnvironment(object):
         # State related parameters
         self.initial_poses = np.array([])
         self.poses = np.array([])  # Chain of Integrator Model (xyz) state
-        self.desired_poses = np.zeros((self.number_of_agents, 3))  # User desired poses
         self.crazyflie_objects = {}
         self.time = time.time()
         self.x_state = dict()
         self.vel_prev = dict()  # for backstepping, vel_prev[i] = np.array((1,3))
         self.des_vel_prev = dict()  # for backstepping
+        if self.number_of_agents <= 0:
+            self.number_of_agents = np.random.random_integers(1, 5)
+        self.desired_poses = np.zeros((self.number_of_agents, 3))  # User desired poses
         self.desired_vels = np.zeros((self.number_of_agents, 3))  # User desired velocities (used for backstepping)
         self.u = dict()  # control inputs to the robots
         self.orientation_real = dict()  # Actual orientation of the quadcopter
         self.pose_real = dict()  # Actual State of the quadcopter
         self.dt = 0.02  # time step size
         # Data recording
-        self.time_record = dict()  # time data
-        self.x_record = dict()  # x data
-        self.input_record = dict()  # u data
-        self.orientation_record = dict()  # orientation data
+        self.time_record = []  # time data
+        self.x_record = []  # x data
+        self.input_record = []  # u data
+        self.orientation_record = []  # orientation data
         # Matrices for integrator model used by CBFs
         self.AA = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
         self.bb = np.array([[0], [0], [0], [1]])
         self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))  # Gains
-        self.bds = np.array([[-1.3, -1.3, -1.0], [1.3, 1.3, 1.0]])  # 2x3 matrix, bds[0] and bds[1] are neg and pos x,y,z bounds respectively.
+        self.bds = np.array([[-1.5, -1.5, -0.1], [1.5, 1.5, 1.8]])  # 2x3 matrix, bds[0] and bds[1] are neg and pos x,
+        # y,z bounds respectively.
 
 
     def get_quadcopter_poses(self):
@@ -112,6 +115,10 @@ class RobotariumEnvironment(object):
             self.x_state[i][0] = self.poses[i]
             self.vel_prev[i] = np.zeros((1, 3))
             self.des_vel_prev[i] = np.zeros((1, 3))
+
+        self.time_record.append(self.run_time())
+        self.x_record.append(self.poses)
+        self.orientation_record.append(self.orientation_real)
 
     def hover_quads_at_initial_poses(self, takeoff_time=10.0):
         """
@@ -204,15 +211,14 @@ class RobotariumEnvironment(object):
             self.poses[i] = self.x_state[i][0, :]
             self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
             self.vel_prev[i] = self.x_state[i][1, :]
-            self.des_vel_prev[i] = self.desired_vels[i]
+            self.des_vel_prev[i] = self.desired_vels[i, :]
 
         # Data recording
         plt.pause(0.02)
-        self.time_record[self.count] = str(self.run_time())
-        self.x_record[self.count] = self.pose_real
-        self.orientation_record[self.count] = self.orientation_real
-        self.input_record[self.count] = self.u.copy()
-
+        self.time_record.append(self.run_time())
+        self.x_record.append(self.poses.copy())
+        self.orientation_record.append(self.orientation_real.copy())
+        self.input_record.append(self.u.copy())
         self.count += 1
 
     def check_timeout(self):
@@ -226,6 +232,7 @@ class RobotariumEnvironment(object):
         global TIMEOUT_FLAG, TIMEOUT_TIME
         if self.run_time() > TIMEOUT_TIME:
             TIMEOUT_FLAG = True
+            self.save_data()
         return TIMEOUT_FLAG
 
     def run_time(self):
@@ -245,10 +252,10 @@ class RobotariumEnvironment(object):
 
         """
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
-        file_n = 'quads_robotarium_'+ time_stamp +'.pckl'
+        file_n = 'quads_robotarium_sim_'+ time_stamp +'.pckl'
         arrays = [self.time_record, self.x_record, self.orientation_real, self.input_record]
         with open(file_n, 'wb') as file:
-            pickle.dump(arrays, file)
+            pickle.dump(arrays, file, protocol=2)
 
     def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1):
         """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
@@ -263,7 +270,6 @@ class RobotariumEnvironment(object):
         Returns:
             u_safe (ndarray): Minimally altered inputs to guarantee safety (same size as u).
         """
-
 
         if u:
             u = u.copy()

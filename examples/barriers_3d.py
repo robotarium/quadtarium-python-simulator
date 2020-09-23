@@ -40,17 +40,17 @@ if __name__ == "__main__":
     b = np.array([[0], [0], [0], [1]])
     Kb = acker(A, b, [-12.2, -12.4, -12.6, -12.8])
 
-    waypoints = np.array([[-1.1, -1.1, -0.8],
-                          [0.9, 0.9, -0.8],
-                          [-1, 0.9, -0.8],
-                          [0.9, -0.9, -0.8],
-                          [-0.9, -0.9, -0.8]])
+    waypoints = np.array([[-1.1, -1.1, 0.8],
+                          [0.9, 0.9, 0.8],
+                          [-1, 0.9, 0.8],
+                          [0.9, -0.9, 0.8],
+                          [-0.9, -0.9, 0.8]])
 
-    initial_points = np.array([[1.0, 0.0, -0.8],
-                               [0.5, 0.0, -0.8],
-                               [0.0, 0.0, -0.8],
-                               [-0.5, 0.0, -0.8],
-                               [-1.0, 0.0, -0.8]])
+    initial_points = np.array([[1.0, 0.0, 0.8],
+                               [0.5, 0.0, 0.8],
+                               [0.0, 0.0, 0.8],
+                               [-0.5, 0.0, 0.8],
+                               [-1.0, 0.0, 0.8]])
 
     interval = np.array([5, 3, 5, 3, 5])
     time_total = np.sum(interval)
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 else:
                     om = 0.5*np.pi
                     th = t_real*dt*om + i*np.pi/2
-                    p_hat[i] = np.array([[radii*cos(th), radii*sin(th), -0.8],
+                    p_hat[i] = np.array([[radii*cos(th), radii*sin(th), 0.8],
                                          [-radii*om*sin(th), radii*om*cos(th), 0],
                                          [-radii*om**2*cos(th), -radii*om**2*sin(th), 0],
                                          [radii*om**3*sin(th), -radii*om**3*cos(th), 0]])
@@ -141,3 +141,6 @@ if __name__ == "__main__":
             robotarium.update_poses()
             curr_dist = np.linalg.norm(robotarium.poses - initial_points)
         print("-----Experiment completed-----")
+
+    # Save experiment data (time, position, orientation, input)
+    robotarium.save_data()
