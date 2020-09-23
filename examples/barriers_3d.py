@@ -141,3 +141,6 @@ if __name__ == "__main__":
             robotarium.update_poses()
             curr_dist = np.linalg.norm(robotarium.poses - initial_points)
         print("-----Experiment completed-----")
+
+    # Save experiment data (time, position, orientation, input)
+    robotarium.save_data()
