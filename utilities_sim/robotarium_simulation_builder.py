@@ -57,7 +57,8 @@ class RobotariumEnvironment(object):
         self.AA = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
         self.bb = np.array([[0], [0], [0], [1]])
         self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))  # Gains
-        self.bds = np.array([[-1.3, -1.3, -1.0], [1.3, 1.3, 1.0]])  # 2x3 matrix, bds[0] and bds[1] are neg and pos x,y,z bounds respectively.
+        self.bds = np.array([[-1.3, -1.3, 0.0], [1.3, 1.3, 1.8]])  # 2x3 matrix, bds[0] and bds[1] are neg and pos x,
+        # y,z bounds respectively.
 
 
     def get_quadcopter_poses(self):
