@@ -20,7 +20,7 @@ TIMEOUT = False
 
 if __name__ == "__main__":
     # creates robotarium object, indictate if user would like to save data
-    robotarium = robotarium_simulation_builder.RobotariumEnvironment(save_data=False)
+    robotarium = robotarium_simulation_builder.RobotariumEnvironment(save_data=True)
 
     # robotarium object sets a random number of agents to be created
 

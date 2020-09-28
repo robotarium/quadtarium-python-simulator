@@ -10,6 +10,7 @@ import time
 import pickle
 from utilities_sim.actuation import vel_back_step, gen_splines
 from utilities_sim.quadcopter_model import QuadcopterObject
+import os
 
 TIMEOUT_FLAG = False
 TIMEOUT_TIME = 30
@@ -250,8 +251,12 @@ class RobotariumEnvironment(object):
         Returns:
 
         """
+
+        repo_path = '../experimental_data/'
+        if not os.path.isdir(repo_path):
+            os.mkdir(repo_path)
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
-        file_n = 'quads_robotarium_sim_'+ time_stamp +'.pckl'
+        file_n = repo_path + 'quads_robotarium_sim_' + time_stamp +'.pckl'
         arrays = [self.time_record, self.x_record, self.orientation_real, self.input_record]
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file, protocol=2)
