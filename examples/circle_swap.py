@@ -1,14 +1,11 @@
-# !/usr/bin/env python
-# Examples Go-to-Point File
-# Christopher Banks
-# 10/14/18
-# This file provides an example of how to send commands to the Robotarium for moving a number of quadcopters from one pose
-# to another.
-
 import numpy as np
 from utilities_sim import robotarium_simulation_builder
-'''name: Point-to-Point Demo author: Yousef Emam date: 07/15/2020 description: N quadrotors are initialized to 
-position themselves around a circle. They then repeatedly attempt to traverse to the opposite side of the circle. '''
+
+''' name: Point-to-Point Demo 
+    author: Yousef Emam 
+    date: 07/15/2020 
+    description: N quadrotors are initialized to position themselves around a circle. 
+    They then repeatedly attempt to traverse to the opposite side of the circle. '''
 
 
 
@@ -32,18 +29,17 @@ if __name__ == "__main__":
     p_theta = np.arange(1, 2 * N, 2) / (2 * N) * 2 * np.pi
     p_circ = np.array([[xybound[1] * np.cos(p_theta), xybound[1] * np.cos(p_theta + np.pi)],
                        [xybound[3] * np.sin(p_theta), xybound[3] * np.sin(p_theta + np.pi)]])
-    p_circ = np.transpose(np.append(p_circ, -0.8*np.ones((1, 2, N)), axis=0), (2, 0, 1))
+    p_circ = np.transpose(np.append(p_circ, 0.8*np.ones((1, 2, N)), axis=0), (2, 0, 1))
 
     # Initialize Goal
     x_goal = p_circ[:, :, 0]
 
+    # Plot targets
     robotarium.robotarium_simulator_plot.scatter3D(p_circ[:, 0, 0], p_circ[:, 1, 0], p_circ[:, 2, 0], cmap='Greens')
     robotarium.robotarium_simulator_plot.scatter3D(p_circ[:, 0, 1], p_circ[:, 1, 1], p_circ[:, 2, 1], cmap='Greens')
 
     # Flag of task completion
     flag = 0
-
-
 
     t = 0
 
@@ -61,7 +57,6 @@ if __name__ == "__main__":
         else:
             x_goal = p_circ[:, :, 1]
 
-
         # Set desired pose
         robotarium.set_desired_poses(x_goal)
         # send pose commands to robotarium
@@ -70,7 +65,6 @@ if __name__ == "__main__":
         t += 1
 
 
-    #robotarium.save_data()
 
 
 

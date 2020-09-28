@@ -211,7 +211,6 @@ class RobotariumEnvironment(object):
             self.poses[i] = self.x_state[i][0, :]
             self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
             self.vel_prev[i] = self.x_state[i][1, :]
-            self.des_vel_prev[i] = self.desired_vels[i, :]
 
         # Data recording
         plt.pause(0.02)
@@ -340,9 +339,8 @@ class RobotariumEnvironment(object):
 
         for i in range(N):
             u[i] = np.reshape(x[3 * i:3 * i + 3], (1, 3))
-
-        if sol['status'] == 'unknown':
-            raise Warning('Control Barrier Function QP could not be solved.')
+            if sol['status'] == 'unknown' and np.any(np.isnan(u[i])):
+                raise Warning('Control Barrier Function QP could not be solved.')
 
         return u
 
