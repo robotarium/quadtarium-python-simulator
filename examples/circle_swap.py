@@ -3,11 +3,9 @@ from utilities_sim import robotarium_simulation_builder
 
 ''' name: Point-to-Point Demo 
     author: Yousef Emam 
-    date: 07/15/2020 
+    date: 09/28/2020
     description: N quadrotors are initialized to position themselves around a circle. 
     They then repeatedly attempt to traverse to the opposite side of the circle. '''
-
-
 
 TIMEOUT = False
 
@@ -18,7 +16,7 @@ if __name__ == "__main__":
     # Number of agents
     N = 3
     # creates robotarium object, indicate if user would like to save data
-    robotarium = robotarium_simulation_builder.RobotariumEnvironment(barriers=True, number_of_agents=N, save_data=False)
+    robotarium = robotarium_simulation_builder.RobotariumEnvironment(barriers=True, number_of_agents=N)
     # if specific initial poses are desired, set robotarium.initial_poses (np.array of size Nx3)
     # robotarium.initial_poses = ....
     # instantiates Robotarium and initializes quadcopters at random poses if initial_poses is not set

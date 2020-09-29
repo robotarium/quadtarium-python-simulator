@@ -1,32 +1,44 @@
 #!/usr/bin/env python
 import numpy as np
-import math
+
 MAX_VELOCITY = 0.5
 TIME = 1
 
-''' name: Actuation File
-    author: Christopher Banks & Yousef Emam
-    date: 07/20/2020
-    description: Contains files for generating motion in simulation/experiment.'''
+''' name: Interpolation File
+    authors: Christopher Banks and Yousef Emam
+    date: 09/28/2020
+    description: Contains helper functions for generating the spline as per the Mellinger controller.'''
 
-def dist_between_nodes(node1_val, node2_val):
-    sum_v = 0
-    for dim in range(node1_val.shape[0]):
-        diff = (node1_val[dim] - node2_val[dim]) ** 2
-        sum_v = sum_v + diff
-    dist = np.sqrt(sum_v)
-    return dist
 
 def spline_interpolation(points, time_interval=None, total_time=None):
-    # points (n x 3) array x, y, z points  #3 points
-    # have at least 4 initial points
+    """Perform the spline interpolation to reach all the input points given the time intervals or the total time.
+
+    Parameters
+    ----------
+    points : ndarray
+           Array of xyz points to be reached. The array is 2 dimensional and has size (num_points, 3). Must have at
+           least 4, if not, more points will be automatically generated.
+    time_interval : ndarray, optional
+                 Time interval to reach each of the specified points.
+    total_time : float, optional
+               Total time to reach all points.
+
+    Returns
+    -------
+    coefficients  : ndarray
+                  The coefficients of the spline.
+    num_of_coeffs : int
+                 Number of coefficients.
+    time_interval : ndarray
+                 The time intervals desired (same as input if specified).
+    """
 
     # Ensure that trajectory has at least 4 points, if not generate some using midpoints.
     if points.shape[0] == 2:
         new_points = np.zeros((4, 3))
         new_points[0] = points[0]
         new_points[3] = points[1]
-        dist = np.linalg.norm(new_points[3] - new_points[0], 2) * 1/2 #TODO: this 1/2 should go but it keeps the same speed as before (i.e. sim is too slow if not)
+        dist = np.linalg.norm(new_points[3] - new_points[0], 2) * 1/2  #TODO: this 1/2 should go but it keeps the same speed as before (i.e. sim is too slow if not)
         if dist == 0:
             raise Exception('Waypoint provided is the same as current pose.')
         new_points[1] = 1/2 * (new_points[3] - new_points[0]) + new_points[0]
@@ -46,86 +58,93 @@ def spline_interpolation(points, time_interval=None, total_time=None):
             total_time = dist / velocity
         time_interval = np.linspace(0, total_time, points.shape[0])
 
-    degree = 5
-    num_of_polys = points.shape[0] - 1  # 3
+    degree = 5  # degree of the polynomial to be generated
+    num_of_polys = points.shape[0] - 1  # number of polynomials (1 between each 2 desired points, typically 3 total)
     a_matrix = np.zeros(((degree + 1) * num_of_polys, (degree + 1) * num_of_polys))  # 18 x 18
     num_of_coeffs = int(float(a_matrix.shape[1]) / float(num_of_polys))  # 6
     b_vector = np.zeros(((degree + 1) * num_of_polys, 1))
     coefficients = np.array([])
 
+    #TODO: Clean this up...
     for dim in range(points.shape[1]):
         w = points[:, dim]
         t = time_interval
-        i = 0
-        for poly in range(num_of_polys):#TODO: Go over this, what are we doing? Are these if statements necessary?
+        for poly in range(num_of_polys):
+            # First Polynomial
             if poly == 0:
-                poly_index_0 = poly * (degree + 1)
-                a_matrix[poly_index_0, 0:num_of_coeffs] = get_standard_poly(t[i], ord=6, der=0)
-                a_matrix[poly_index_0 + 1, 0:num_of_coeffs] = get_standard_poly(t[i], ord=6, der=1)
-
-
+                a_matrix[0, 0:num_of_coeffs] = get_unit_poly(t[poly], ord=6, der=0)
+                a_matrix[1, 0:num_of_coeffs] = get_unit_poly(t[poly], ord=6, der=1)
                 # first deriv
-                a_matrix[poly_index_0 + 2, 0:num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=1)
+                a_matrix[2, 0:num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=1)
                 # second deriv
-                a_matrix[poly_index_0 + 3, 0:num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=2)
+                a_matrix[3, 0:num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=2)
                 # third deriv
-                a_matrix[poly_index_0 + 4, 0:num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=3)
+                a_matrix[4, 0:num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=3)
                 # fourth deriv
-                a_matrix[poly_index_0 + 5, 0:num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=4)
+                a_matrix[5, 0:num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=4)
                 # fifth deriv condition
-                a_matrix[poly_index_0 + 6, 0:num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=5)  # [120, 0, 0..]
-
+                a_matrix[6, 0:num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=5)  # [120, 0, 0..]
                 # Insert negative of first to fifth derivatives
-                a_matrix[poly_index_0 + 2: poly_index_0 + 7, num_of_coeffs:2*num_of_coeffs] = - a_matrix[poly_index_0 + 2: poly_index_0 + 7, :num_of_coeffs].copy()
-
-
-                a_matrix[poly_index_0 + 7, 0:num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=0)
-
-                b_vector[poly_index_0] = w[i]
-                b_vector[poly_index_0 + 7] = w[i + 1]
-
+                a_matrix[2:7, num_of_coeffs:2*num_of_coeffs] = -a_matrix[2:7, :num_of_coeffs].copy()
+                a_matrix[7, 0:num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=0)
+                b_vector[0] = w[poly]
+                b_vector[7] = w[poly + 1]
+            # Middle Polynomials
             elif poly == (num_of_polys - 1):
-                a_matrix[(poly + 1) * (degree + 1) - 4, (degree + 1) * (poly + 1) - num_of_coeffs:] = get_standard_poly(t[i], ord=6, der=0)
-                a_matrix[(poly + 1) * (degree + 1) - 3, (degree + 1) * (poly + 1) - num_of_coeffs:] = get_standard_poly(t[i+1], ord=6, der=2)
-                a_matrix[(poly + 1) * (degree + 1) - 2,
-                (((degree + 1) * (poly + 1) - num_of_coeffs) - num_of_coeffs):(degree + 1) * (
-                        poly + 1) - num_of_coeffs] = get_standard_poly(t[i], ord=6, der=5)
-                a_matrix[(poly + 1) * (degree + 1) - 2, (degree + 1) * (poly + 1) - num_of_coeffs:] = - get_standard_poly(t[i], ord=6, der=5)
-                a_matrix[(poly + 1) * (degree + 1) - 1, (degree + 1) * (poly + 1) - num_of_coeffs:] = get_standard_poly(t[i+1], ord=6, der=0)
-                b_vector[(poly + 1) * (degree + 1) - 4] = w[i]
-                b_vector[(poly + 1) * (degree + 1) - 1] = w[i + 1]
-
+                poly_index = (poly + 1) * (degree + 1)
+                a_matrix[poly_index - 4, poly_index - num_of_coeffs:] = get_unit_poly(t[poly], ord=6, der=0)
+                a_matrix[poly_index - 3, poly_index - num_of_coeffs:] = get_unit_poly(t[poly + 1], ord=6, der=2)
+                a_matrix[poly_index - 2, poly_index - 2*num_of_coeffs:poly_index - num_of_coeffs] = get_unit_poly(t[poly], ord=6, der=5)
+                a_matrix[poly_index - 2, poly_index - num_of_coeffs:] = -get_unit_poly(t[poly], ord=6, der=5)
+                a_matrix[poly_index - 1, poly_index - num_of_coeffs:] = get_unit_poly(t[poly + 1], ord=6, der=0)
+                b_vector[poly_index - 4] = w[poly]
+                b_vector[poly_index - 1] = w[poly + 1]
+            # Last Polynomial
             elif poly < (num_of_polys - 1):
                 poly_index = poly * (degree + 1) + 2
-                a_matrix[poly_index, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_standard_poly(t[i], ord=6, der=0)
+                a_matrix[poly_index, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_unit_poly(t[poly], ord=6, der=0)
                 # first deriv
-                a_matrix[poly_index + 1, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=1)
+                a_matrix[poly_index + 1, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=1)
                 a_matrix[poly_index + 1,
-                (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_standard_poly(t[i+1], ord=6, der=1)
+                (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_unit_poly(t[poly + 1], ord=6, der=1)
                 # second deriv
-                a_matrix[poly_index + 2, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=2)
-                a_matrix[poly_index + 2, (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_standard_poly(t[i+1], ord=6, der=2)
+                a_matrix[poly_index + 2, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=2)
+                a_matrix[poly_index + 2, (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_unit_poly(t[poly + 1], ord=6, der=2)
                 # third deriv
-                a_matrix[poly_index + 3, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=3)
-                a_matrix[poly_index + 3, (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_standard_poly(t[i+1], ord=6, der=3)
+                a_matrix[poly_index + 3, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=3)
+                a_matrix[poly_index + 3, (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_unit_poly(t[poly + 1], ord=6, der=3)
                 # fourth deriv
-                a_matrix[poly_index + 4, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=4)
-                a_matrix[poly_index + 4, (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_standard_poly(t[i+1], ord=6, der=4)
+                a_matrix[poly_index + 4, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=4)
+                a_matrix[poly_index + 4, (poly + 1) * num_of_coeffs:(poly + 1) * num_of_coeffs + num_of_coeffs] = -get_unit_poly(t[poly + 1], ord=6, der=4)
                 # 0th derivative
-                a_matrix[poly_index + 5, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_standard_poly(t[i+1], ord=6, der=0)
-
-                b_vector[poly_index] = w[i]
-                b_vector[poly_index + 5] = w[i + 1]
-            i += 1
+                a_matrix[poly_index + 5, poly * num_of_coeffs:poly * num_of_coeffs + num_of_coeffs] = get_unit_poly(t[poly + 1], ord=6, der=0)
+                b_vector[poly_index] = w[poly]
+                b_vector[poly_index + 5] = w[poly + 1]
 
         coeffs = np.linalg.solve(a_matrix, b_vector)
+
         if coefficients.shape[0] == 0:
             coefficients = coeffs
         else:
             coefficients = np.append(coefficients, coeffs, axis=1)
+
     return coefficients, num_of_coeffs, time_interval
 
 def extract_points(coefficients_info, dt=0.02):
+    """Extract the xyz poses with derivatives given the spline coefficients.
+
+    Parameters
+    ----------
+    coefficients_info : tuple
+                      (coefficients, num_of_coeffs, time_interval) as returned by spline_interpolation.
+    dt : float, optional
+       timestep
+
+    Returns
+    -------
+    points : ndarray
+           xyz poses to track including the derivatives. Three dimensional array of size (num_points, 4, 3).
+    """
 
     coefficients, num_of_coeffs, time_interval = coefficients_info
     points = np.zeros((0, 4, 3))
@@ -154,95 +173,26 @@ def extract_points(coefficients_info, dt=0.02):
 
     return points
 
-def calculate_midpoint(point_0, point_1, flat=False):
-
-    #TODO: Check input dimensionalities to this function
-    #return (point_0 + point_1) / 2
-    mid_x = float(point_0[0] + point_1[0]) / 2
-    mid_y = float(point_0[1] + point_1[1]) / 2
-
-    if flat is True:
-        middle_point = np.array([mid_x, mid_y])
-    else:
-        mid_z = float(point_0[2] + point_1[2]) / 2
-        middle_point = np.array([mid_x, mid_y, mid_z])
-
-    return middle_point
-
-
-def cost_of_path(path):
-    tot_distance = 0
-    for i in range(path.shape[0]):
-        if i < (path.shape[0] - 1):
-            k = i + 1
-            point_i = path[i]
-            point_k = path[k]
-            dist = dist_between_nodes(point_i, point_k)
-            tot_distance += dist
-        else:
-            break
-    return tot_distance
-
-
-# def spline_return(points, dim=3, deg=5):
-#     array_of_points = np.zeros((5, points.shape[1]))
-#     coefficients = np.array([])
-#     array_of_points[2] = calculate_midpoint(points[0], points[1])
-#     array_of_points[4] = points[1]
-#     for i in range(array_of_points.shape[0]):
-#         if i == 1 or i == 3:
-#             array_of_points[i] = calculate_midpoint(array_of_points[i - 1], array_of_points[i + 1])
-#             continue
-#         if i == 2 or i == 4:
-#             continue
-#         array_of_points[i] = points[i]
-#
-#     dist = cost_of_path(array_of_points)
-#     velocity = dist / TIME
-#     time = TIME
-#     if velocity > MAX_VELOCITY:
-#         time = dist / MAX_VELOCITY
-#
-#     time_array = np.linspace(0, time, array_of_points.shape[0])
-#     for i in range(dim):
-#         coeffs = np.expand_dims(np.polyfit(time_array, array_of_points[:, i], deg=deg), 1)
-#         if coefficients.shape[0] == 0:
-#             coefficients = coeffs
-#         else:
-#             coefficients = np.append(coefficients, coeffs, axis=1)
-#     points = extract_points((coefficients, deg + 1, time_array))
-#     return points
-
-# def parameterize_time_waypoint_generator(phat, x, s, dt):
-#     ks = 10
-#     sd = math.exp(-ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2)  # paramed time dynamics
-#     pd = phat[1, :] * sd
-#     sdd = -ks * math.exp(-ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * 2 * np.dot(phat[0, :] - x[0, :], pd - x[1, :])
-#     pdd = phat[2, :] * sd ** 2 + phat[1, :] * sdd
-#     sddd = ks * ks * math.exp(-ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * 4 * (
-#         np.dot(phat[0, :] - x[0, :], pd - x[1, :])) ** 2 - ks * 2 * math.exp(
-#         -ks * dist_between_nodes(phat[0, :], x[0, :]) ** 2) * (np.dot(pd - x[1, :], pd - x[1, :]) + np.dot(phat[0, :] - x[0, :],
-#                                                                                                            pdd - x[2, :]) * dist_between_nodes(pdd, x[2, :]) + np.dot(phat[0, :] - x[0, :], pd - x[1, :]))
-#     pddd = phat[3, :] * sd ** 3 + 3 * phat[2, :] * sd * sdd + phat[1, :] * sddd
-#     phatnew = np.vstack([phat[0, :], pd, pdd, pddd])
-#     s = s + sd * dt
-#     return phatnew, s
-
-def get_standard_poly(t, ord=6, der=0):
+def get_unit_poly(t, ord=6, der=0):
     """Generates polynomials of standard form with all coeffs = 1 if derivative (der) = 0.
     E.g. (ord=4, der=0):
         p =    t**3  + t**2 + t + 1
         (ord=3, der=1):
         p = 3*(t**2) + 2*t  + 1 + 0
 
-    Args:
-        t (float): The value the polynomial is built around
-        ord (int): order of the polynomial
-        der (int): derivative (1 is first derivative, etc...)
+    Parameters
+    ----------
+        t : float
+            The value the polynomial is built around
+        ord : int, optional
+            Order of the polynomial
+        der : int, optional
+            Derivative (1 is first derivative, etc...)
 
-    Returns:
-        p (np.array): 1-D array of size (ord,) containing the polynomial
-
+    Returns
+    -------
+        p : ndarray
+            1-D array of size (ord,) containing the polynomial
     """
 
     if der > ord:

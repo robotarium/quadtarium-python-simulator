@@ -5,14 +5,27 @@ from utilities_sim import quadcopter_plot
 ''' name: Quadcopter Model
     author: Christopher Banks and Yousef Emam
     date: 09/15/2020
-    description: Contains files for simulating the communication framework of the Robotarium for
-    the quadcopters. DO NOT EDIT'''
+    description: Contains the main quadcopter class.DO NOT EDIT'''
 
-class QuadcopterObject():
+
+class QuadcopterObject:
     """Quadcopter object created for each quadcopter in order to update dynamics, plot, etc...
     """
 
     def __init__(self, robotarium_simulator, initial_pose=None, index=0, dt=0.02):
+        """Quadcopter Object constructor.
+
+        Parameters
+        ----------
+        robotarium_simulator : RobotariumEnvironment
+                             Robotarium simulator environment.
+        initial_pose : ndarray, optional
+                     Initial position of the quad.
+        index : int, optional
+              Index of this quadcopter in the swarm.
+        dt : float, optional
+           Timestep size.
+        """
 
         self.thrust_hover = 0
 
@@ -56,23 +69,35 @@ class QuadcopterObject():
         self.set_init_pose(initial_pose)
         self.thrust_hover = self.thrust_hover
 
-
-    def set_initial_random_pose(self):
-        pose_x = (1.3 - (-1.3))*np.random.sample() + (-1.3)
-        pose_y = (1.3 - (-1.3))*np.random.sample() + (-1.3)
-        pose_z = 0
-        pose = np.array([pose_x, pose_y, pose_z])
-        return pose
-
     def get_init_pose(self):
+        """Get an initial position for the quadcopter.
+
+        Returns
+        -------
+        pose : ndarray
+        orientation : ndarray
+                    Currently, roll pitch yaw are all initialized to zeros.
+        """
         if self.first_flag is True:
             self.first_flag = False
-            pose = self.set_initial_random_pose()
+            pose = self.get_initial_random_pose()
             self.quadcopter_communicate = quadcopter_plot.QuadPlotObject(self.sim_env, pose)
             orientation = np.zeros((1, 3))
             return pose, orientation
 
     def set_init_pose(self, initial_pose):
+        """Initializes the quadcopter at the desired initial position.
+
+        Parameters
+        ----------
+        initial_pose : ndarray
+                     Initial position of the quadcopter.
+
+        Returns
+        -------
+
+        """
+
         if self.first_flag is True:
             self.first_flag = False
             self.quadcopter_communicate = quadcopter_plot.QuadPlotObject(self.sim_env, initial_pose)
@@ -80,13 +105,34 @@ class QuadcopterObject():
             self.state[:3] = initial_pose
 
     def set_pose(self, pose, sim_env, roll=0, pitch=0, yaw=0, thrust=0):
+        """Set position and orientation of the quadcopter (resets derivatives).
 
+        Parameters
+        ----------
+        pose : ndarray
+        sim_env : Dim3.Axes3D
+        roll : float, optional
+        pitch : float, optional
+        yaw : float, optional
+        thrust : float, optional
+
+        Returns
+        -------
+
+        """
         self.quadcopter_communicate.update(sim_env, pose, roll, pitch, yaw)
         self.state[:3] = pose
         self.state[3:6] = np.array([roll, pitch, yaw])
         self.state[6:] = 0
 
     def get_pose_and_orientation(self):
+        """Obtain pose and orientation of the quadcopter.
+
+        Returns
+        -------
+        pose : ndarray
+        orientation : ndarray
+        """
 
         pose = self.state[:3]
         orientation = self.state[3:6]
@@ -94,25 +140,49 @@ class QuadcopterObject():
         return pose, orientation
 
     def get_state(self):
+        """Get internal state of the quadcopter.
+
+        Returns
+        -------
+        state : ndarray
+              Internal state of the quadrotor. Array of size (12,).
+        """
 
         return self.state
 
     def set_state(self, state, sim_env):
+        """Sets the internal state of the quadrotor.
+
+        Parameters
+        ----------
+        state : ndarray
+              State
+        sim_env : Dim3.Axes3D
+                Simulation Environment plot
+
+        Returns
+        -------
+        """
 
         self.quadcopter_communicate.update(sim_env, state[:3], state[3], state[4], state[5])
         self.state = state
 
     def hover_bot(self, hover_point, s, sim_env):
-        """Hover the quads at a specific location.
+        """Hover the quadrotor to a specific location.
 
-        Args:
-            hover_point (ndarray): Hover points as x,y,z
-            s (float): time step
-            sim_env: simulation environment
+        Parameters
+        ----------
+        hover_point : ndarray
+                    Hover points as x,y,z
+        s : float
+          time step
+        sim_env : Dim3.Axes3D
+                simulation environment plot
 
-        Returns:
-            position (ndarray): next position to go as x,y,z
-
+        Returns
+        ----------
+        position : ndarray
+                 Next position to go as x,y,z
         """
         dx = hover_point - self.pose  # x,y,z diff
         next_pos = self.pose + s*dx
@@ -125,32 +195,41 @@ class QuadcopterObject():
         else:
             return 0, self.pose
 
-
     def set_diff_flat_term(self, goal_pose):
-        """Obtain roll, pitch, yaw, thrust for going to a desired position.
+        """Obtain roll, pitch, yaw, thrust for going to a desired position. No longer used by the simulator.
 
-        Args:
-            goal_pose (ndarray): Desired pose of size (4, 3)
+        Parameters
+        ----------
+        goal_pose : ndarray
+                  Desired pose of size (4, 3)
 
-        Returns:
-            r (float): Roll
-            p (float): Pitch
-            y (float): Yaw Rate (currently just 0 here)
-            t (float): Thrust
-
+        Returns
+        -------
+        orientation : ndarray
+                   Roll, pitch, yaw
+        thrust : float
+              Thrust
         """
-        r, p, y, t = invert_diff_flat_output(goal_pose, thrust_hover=self.thrust_hover)
-        return r, p, y, t
+        r, p, y, thrust = invert_diff_flat_output(goal_pose, thrust_hover=self.thrust_hover)
+        orientation = np.array([r, p, y])
+
+        return orientation, thrust
 
     def go_to(self, desired_pose, desired_orientation=None):
-        """Obtains u_1, u_2, u_3, u_4 for going to a desired pose.
+        """Obtains the necessary control inputs for the quadrotor to reach the desired pose.
 
-        Args:
-            goal_pose (ndarray): Desired pose of size (4, 3)
+        Parameters
+        ----------
+        desired_pose : ndarray
+                    Desired xyz pose of size 4 by 3 where the rows are the derivatives.
 
-        Returns:
-            state (ndrray): Returns the fulls state array
-                            [x,y,z,roll,pitch,yaw,x_dot,y_dot,z_dot,roll_dot,pitch_dot,yaw_dot]
+        desired_orientation : ndarray, optional
+                           Desired roll, pitch yaw of size 4 by 3 where the rows are the derivatives. Not supported yet.
+
+        Returns
+        -------
+        u : ndarray
+          Control inputs of the quadcopters.
         """
 
         # Obtain Control Inputs needed to follow desired trajectory
@@ -159,6 +238,18 @@ class QuadcopterObject():
         return u
 
     def obtain_desired_inputs(self, desired_pose, desired_orientation=None):
+        """Obtain the desired inputs (thrust and moments) for each of the quadcopter given their desired poses.
+
+        Parameters
+        ----------
+        desired_pose : ndarray
+        desired_orientation : ndarray
+
+        Returns
+        -------
+        u : ndarray
+          Control inputs of the quadcopters.
+        """
 
         if desired_orientation is None:  # Just keep the current angles
             desired_orientation = np.zeros((4, 3))
@@ -167,12 +258,12 @@ class QuadcopterObject():
         u = np.zeros(4)  # Control Input that we want to compute [Thrust, Mx, My, Mz]
 
         # XYZ Position and Velocity Errors
-        e_p = self.state[0:3] - desired_pose[0]
-        e_v = self.state[6:9] - desired_pose[1]
+        e_p = (self.state[0:3] - desired_pose[0])
+        e_v = (self.state[6:9] - desired_pose[1])
         self.i_error = np.clip(self.i_error + e_p * self.dt, -self.i_range, self.i_range)
 
         # Desired Thrust in world frame
-        F_des = - self.kp * e_p - self.kd * e_v - self.ki * self.i_error + self.m * (desired_pose[2] + self.g * np.array([0, 0, 1]))
+        F_des = - self.kp * e_p - self.kd * e_v - self.ki * self.i_error.squeeze() + self.m * (desired_pose[2] + self.g * np.array([0, 0, 1]))
 
         R = self.get_Rwb()  # Rotation matrix
 
@@ -208,6 +299,20 @@ class QuadcopterObject():
         return u
 
     def forward_model(self, sim_env, u):
+        """Given the simulation environment and the control input, update and return the internal state of the robots.
+
+        Parameters
+        ----------
+        sim_env : Dim3.Axes3D
+                The robotarium object.
+        u : ndarray
+          The control input for each robot of size 4 (thrust and moments).
+
+        Returns
+        -------
+        next_state : ndarray
+                  The next state of the robots.
+        """
 
         alpha = self.state[3:6]  # Euler Angles of body (phi,theta,psi)
         vel = self.state[6:9]  # Linear Velocity of body (u,v,w)
@@ -239,6 +344,11 @@ class QuadcopterObject():
     def get_Twb(self):
         """Angular velocity transformation matrix from BODY to WORLD frame.
 
+        Returns
+        ----------
+        T : ndarray
+          The angular velocity transformation matrix.
+
         """
 
         phi, theta, _ = self.state[3:6]
@@ -251,6 +361,11 @@ class QuadcopterObject():
 
     def get_Rwb(self):
         """Get rotation matrix from BODY to WORLD frame.
+
+        Returns
+        ----------
+        R : ndarray
+          The rotation matrix.
 
         """
 
@@ -268,13 +383,22 @@ class QuadcopterObject():
 
     @staticmethod
     def vee_map(x_hat):
-        """
-        Inverse of the hat map. Given a matrix of the form:
+        """Inverse of the hat map. Given a matrix of the form:
                  x_hat = np.array(
                          [[0, -x[2], x[1]],
                           [x[2], 0, -x[0]],
                           [-x[1], x[0], 0]])
         Extract and return x.
+
+        Parameters
+        ----------
+        x_hat : ndarray
+          The hat map matrix to invert.
+
+        Returns
+        ----------
+        x : ndarray
+          The vector representation of x_hat.
         """
 
 
@@ -284,6 +408,22 @@ class QuadcopterObject():
 
     @staticmethod
     def hat_map(x):
+        """Inverse of the vee map. Given a size 3 vector, extract and return x_hat:
+         x_hat = np.array(
+                         [[0, -x[2], x[1]],
+                          [x[2], 0, -x[0]],
+                          [-x[1], x[0], 0]])
+
+        Parameters
+        ----------
+        x : ndarray
+          The input vector to which we apply the hat mapping.
+
+        Returns
+        ----------
+        x_hat : ndarray
+          The matrix representation of x.
+        """
 
         assert (len(x.shape) == 1 and x.shape[0] == 3), 'The input to the hat map must be a vector of length 3.'
 
@@ -294,3 +434,25 @@ class QuadcopterObject():
         )
 
         return x_hat
+
+    @staticmethod
+    def get_initial_random_pose(bds=([-1.5, -1.5, -0.1], [1.5, 1.5, 1.8]), epsilon=0.2):
+        """Get a random initial x, y, z position for the quads.
+
+        Parameters
+        -------
+        bds : tuple, optional
+            Tuple containing two lists each of size 3 (neg and pos xyz-bds respectively).
+        epsilon : float, optional
+                Buffer between bds and position in xy.
+        Returns
+        -------
+        pose : ndarray
+        """
+        pose_x = (bds[1][0] - bds[0][0] - 2*epsilon)*np.random.sample() + (bds[0][0] + epsilon)
+        pose_y = (bds[1][1] - bds[0][1] - 2*epsilon)*np.random.sample() + (bds[0][1] + epsilon)
+        pose_z = 0.5 * (bds[1][2] - bds[0][2])
+        pose = np.array([pose_x, pose_y, pose_z])
+        return pose
+
+#TODO: The sim_env called is uncessary since its already referenced as an obj property.

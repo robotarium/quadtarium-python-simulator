@@ -1,14 +1,11 @@
-#!/usr/bin/env python
-import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as Dim3
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from control import acker
 from cvxopt import matrix, solvers
 import time
 import pickle
-from utilities_sim.actuation import vel_back_step, gen_splines
+from utilities_sim.actuation import gen_chain_of_integrators, gen_splines
 from utilities_sim.quadcopter_model import QuadcopterObject
 import os
 
@@ -16,60 +13,72 @@ TIMEOUT_FLAG = False
 TIMEOUT_TIME = 30
 
 ''' name: Robotarium Simulation File
-    authors: Christopher Banks & Yousef Emam
-    date: 09/08/2020
-    description: Contains files for simulating quadcopter (QuadcopterObject) and quadcopter dynamics.'''
-
+    authors: Christopher Banks and Yousef Emam
+    date: 09/28/2020
+    description: Contains the main Robotarium environment class for quadcopters.'''
 
 # contains a simulated version of the Robotarium Environment used for the quadcopters.
 # quadcopters are simulated as a chain of integrators with a control input designed to be
 # 3x differentiable in order to generate the necessary states
 # to back out the control inputs from the differentially flat properties of the quadcopter dynamics.
+
 class RobotariumEnvironment(object):
-    def __init__(self, number_of_agents=rand.randint(3, 10), save_data=True, barriers=True):
+
+    def __init__(self, number_of_agents=1, barriers=True, dt=0.02):
+        """Constructor of the robotarium environment class.
+
+        Parameters
+        ----------
+        number_of_agents : int, optional
+                        Number of agents in the simulation (default is 1)
+        barriers : bool, optional
+            Bool indicating whether to use CBFs for safety (default is True)
+        dt : float, optional
+            Timestep size (default is 0.02)
+        """
 
         # High level parameters
         self.number_of_agents = number_of_agents
         self.robotarium_simulator_plot = None
-        self.barriers = barriers  # Bool indicating whether to ensure safety using CBFs
-        self.save_flag = save_data  # flag indicating whether to save the data relating to the experiment
-        self.count = 0  # experiment iteration count
-        solvers.options['show_progress'] = False  # verbose option for the CBF QP solver
-        # State related parameters
-        self.initial_poses = np.array([])
-        self.poses = np.array([])  # Chain of Integrator Model (xyz) state
         self.crazyflie_objects = {}
         self.time = time.time()
-        self.x_state = dict()
-        self.vel_prev = dict()  # for backstepping, vel_prev[i] = np.array((1,3))
-        self.des_vel_prev = dict()  # for backstepping
-        if self.number_of_agents <= 0:
-            self.number_of_agents = np.random.random_integers(1, 5)
-        self.desired_poses = np.zeros((self.number_of_agents, 3))  # User desired poses
-        self.desired_vels = np.zeros((self.number_of_agents, 3))  # User desired velocities (used for backstepping)
-        self.u = dict()  # control inputs to the robots
+        self.count = 0  # experiment iteration count
+        self.dt = dt  # time step size
+        self.bds = np.array([[-1.5, -1.5, -0.1], [1.5, 1.5, 1.8]])  # 2x3 matrix, bds[0] and bds[1] are neg and pos x,
+        # y,z bounds respectively.
+
+        # Control Barrier Functions (CBFs) parameters
+        self.barriers = barriers  # Bool indicating whether to ensure safety using CBFs
+        solvers.options['show_progress'] = False  # verbose option for the CBF QP solver
+
+        # Actual State related parameters
+        self.initial_poses = np.array([])
         self.orientation_real = dict()  # Actual orientation of the quadcopter
         self.pose_real = dict()  # Actual State of the quadcopter
-        self.dt = 0.02  # time step size
+
+        # Chain of Integrators related parameters
+        self.desired_poses = np.zeros((self.number_of_agents, 3))  # User desired poses
+        self.poses = np.array([])  # Chain of Integrator Model (xyz) state
+        self.x_state = dict()
+        self.u = dict()  # control inputs to the chain of integrators
+        self.AA, self.bb, self.Kb = gen_chain_of_integrators()  # Dynamics of the chain of integrators
         # Data recording
         self.time_record = []  # time data
         self.x_record = []  # x data
         self.input_record = []  # u data
         self.orientation_record = []  # orientation data
-        # Matrices for integrator model used by CBFs
-        self.AA = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
-        self.bb = np.array([[0], [0], [0], [1]])
-        self.Kb = np.asarray(acker(self.AA, self.bb, [-12.2, -12.4, -12.6, -12.8]))  # Gains
-        self.bds = np.array([[-1.5, -1.5, -0.1], [1.5, 1.5, 1.8]])  # 2x3 matrix, bds[0] and bds[1] are neg and pos x,
-        # y,z bounds respectively.
 
+        # Backstepping parameters (TODO: not implemented yet...)
+        self.vel_prev = dict()  # for backstepping, vel_prev[i] = np.array((1,3))
+        self.des_vel_prev = dict()  # for backstepping
 
     def get_quadcopter_poses(self):
-        """Get quadcopter poses.
+        """Get quadcopter xyz positions.
 
-        Returns:
-            poses (ndarray): Array of size (N,3). x,y,z positions of the quadrotors.
-
+        Returns
+        -------
+        poses : ndarray
+              Array of size (N,3) containing xyz positions of the quadrotors.
         """
         poses = np.zeros((self.number_of_agents, 3))
         for i in range(self.number_of_agents):
@@ -79,11 +88,14 @@ class RobotariumEnvironment(object):
     def set_desired_poses(self, poses):
         """Set the desired poses for the quadcopters.
 
-        Args:
-            poses (ndarray): Array of size (N,3).
+        Parameters
+        ----------
+        poses : ndarray
+              Array of size (N,3). x,y,z containing positions of the quadrotors.
 
-        Returns:
-`
+        Returns
+        -------
+
         """
 
         self.desired_poses = poses
@@ -91,7 +103,8 @@ class RobotariumEnvironment(object):
     def build(self):
         """Builds the robotarium object and creates quadcopter object (includes plotting) for each quadcopter.
 
-        Returns:
+        Returns
+        -------
 
         """
 
@@ -122,12 +135,14 @@ class RobotariumEnvironment(object):
         self.orientation_record.append(self.orientation_real)
 
     def hover_quads_at_initial_poses(self, takeoff_time=10.0):
-        """
+        """Let the quadrotors hover to a specific position.
 
-        Args:
-            takeoff_time (float):
+        Parameters
+        ----------
+        takeoff_time : float, optional
 
-        Returns:
+        Returns
+        -------
 
         """
 
@@ -150,48 +165,43 @@ class RobotariumEnvironment(object):
             self.x_state[i] = np.zeros((4, 3))
             self.x_state[i][0] = self.poses[i]
 
+    def update_poses(self):
+        """Upon specifying the desired xyz position for each robot, this function will use a go-to controller to reach
+        the desired positions. The controller works as follows. Given the user-specified desired pose, at least 3 times
+        differentiable trajectories will be be computed to reach that desired pose (using spline interpolation).
+        Then, only a single step is taken to reach the first point in the computed trajectory.
 
+        The basic steps for each quad are:
+            1) Generate a series of points (pos -> jerk) defining the trajectory to be followed
+            2) Compute the control (snap) to track this trajectory using the chain of integrators
+            3) Bound the snap and compute safe inputs using CBFs (done jointly, on all quads).
+            4) Use the safe input to update the chain of integrators state
+            5) Let the quacopter track the chain of integrator state (compute inputs and run the forward model)
 
-    def update_poses(self, velocities=False):
-        """Update the state of the quads. User specifies desired pose, at least 3 times differentiable trajectory will be
-        be computed to reach that desired pose. Here, only a single step is taken to reach the first point in the
-        computed trajectory computed by the spline. #TODO: is this correct?
-            1) iterate over quadcopter objects
-            2) send desired points to quads
-            3) make interpolation points from desired point and make max velocity can fly at
-            4) quadcopter updates dynamics from current points based on interpolation point
-            5) only computes a single iteration from the trajectory computed in the spline
-            6) one should call this function until desired poses are acquired which is signaled by the return flag
+        Parameters
+        ----------
 
-        Args:
-            velocities (bool): Determines the control mode, either we give the velocities to the quads as commands or
-            next pose.
-
-        Returns:
+        Returns
+        -------
 
         """
 
-        if velocities is True:
-            for i in range(self.number_of_agents):
-                desired_point = vel_back_step(self.x_state[i], self.vel_prev[i], self.desired_vels[i], self.des_vel_prev[i])
-                self.u[i] = desired_point
-        else:
-            desired_trajs = dict()
-            for i in range(self.number_of_agents):
-                if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:
-                    desired_trajs[i] = np.zeros((4, 3))
-                    desired_trajs[i][0, :] = self.desired_poses[i]
-                    desired_trajs[i] = np.stack((desired_trajs[i], desired_trajs[i]), axis=0)
-                else:
-                    desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
+        desired_trajs = dict()
+        for i in range(self.number_of_agents):
+            if np.linalg.norm((self.x_state[i][0, :] - self.desired_poses[i])) == 0:
+                desired_trajs[i] = np.zeros((4, 3))
+                desired_trajs[i][0, :] = self.desired_poses[i]
+                desired_trajs[i] = np.stack((desired_trajs[i], desired_trajs[i]), axis=0)
+            else:
+                desired_trajs[i] = gen_splines(self.x_state[i][0, :], self.desired_poses[i])
 
 
-            # The desired trajectory for each quadrotor is of shape (n_spline, 4, 3), where n is the number of points
-            # in the spline, 4 is the number of derivatives (size of the integrator state) and 3 is for x, y, z.
-            # So what we are doing here is generating the spline, then synthesizing the control necessary to follow
-            # the first point of the trajectory generated by the spline.
-            for i in range(self.number_of_agents):
-                self.u[i] = desired_trajs[i][0][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][0])
+        # The desired trajectory for each quadrotor is of shape (n_spline, 4, 3), where n is the number of points
+        # in the spline, 4 is the number of derivatives (size of the integrator state) and 3 is for x, y, z.
+        # So what we are doing here is generating the spline, then synthesizing the control necessary to follow
+        # the first point of the trajectory generated by the spline.
+        for i in range(self.number_of_agents):
+            self.u[i] = desired_trajs[i][0][3, :] - np.dot(self.Kb, self.x_state[i] - desired_trajs[i][0])
 
         # Threshold velocities
         for i in range(self.number_of_agents):
@@ -204,9 +214,8 @@ class RobotariumEnvironment(object):
 
         # Update object properties
         for i in range(self.number_of_agents):
-            xd = dict()
-            xd[i] = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
-            self.x_state[i] = self.x_state[i] + xd[i]*self.dt
+            xd = np.dot(self.AA, self.x_state[i]) + np.dot(self.bb, self.u[i])
+            self.x_state[i] = self.x_state[i] + xd*self.dt
             u_moments = self.crazyflie_objects[i].go_to(self.x_state[i], desired_orientation=None)
             self.crazyflie_objects[i].forward_model(self.robotarium_simulator_plot, u_moments)
             self.poses[i] = self.x_state[i][0, :]
@@ -224,8 +233,10 @@ class RobotariumEnvironment(object):
     def check_timeout(self):
         """Check if the experiment ran longer than TIMEOUT_TIME (5 minutes by default).
 
-        Returns:
-            TIMEOUT_FLAG (bool): True if experiment ran longer than TIMEOUT_TIME
+        Returns
+        -------
+        TIMEOUT_FLAG : bool
+                    True if experiment ran longer than TIMEOUT_TIME
 
         """
 
@@ -238,8 +249,10 @@ class RobotariumEnvironment(object):
     def run_time(self):
         """Returns how long the experiment has been running for.
 
-        Returns:
-            time_now (float): Time in secs since the start of the experiment.
+        Returns
+        -------
+            time_now : float
+                    Time in secs since the start of the experiment.
 
         """
         time_now = time.time() - self.time
@@ -248,7 +261,8 @@ class RobotariumEnvironment(object):
     def save_data(self):
         """Saves the experiment data (time, poses, orientation and input) into a pickle file.
 
-        Returns:
+        Returns
+        -------
 
         """
 
@@ -261,28 +275,36 @@ class RobotariumEnvironment(object):
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file, protocol=2)
 
-    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1):
+    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, Ds = 0.3, Ds_bounds = 0.05):
         """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
         A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh.
 
-        Args:
-            x (ndarray): State of the robots of size (?,?,?)
-            u (dict): User specified desired jerks (x,y,z), keys are quad indices and values are of size (3,)
-            zscale (float): Scaling of the z-axis
-            gamma (float): Barrier Gain
+        Parameters
+        -------
+            x : dict
+              States of the chain of integrators for all quadcopters
+            u : ndarray, optional
+              User specified desired snaps for chain of integrators. If not specified, self.u is used.
+            zscale : float, optional
+                   Scaling of the z-axis
+            gamma : float, optional
+                 Barrier Gain
+            Ds : float, optional
+                Inter-robot safety radius
+            Ds_bounds : float, optional
+                Safety radius between robot and robotarium boundaries
 
-        Returns:
-            u_safe (ndarray): Minimally altered inputs to guarantee safety (same size as u).
+        Returns
+        -------
+            u_safe : ndarray
+                  Minimally altered inputs to guarantee safety (same size as u).
         """
 
-        if u:
-            u = u.copy()
-        else:
+        if not u:
             u = self.u
 
         Kb = self.Kb
         N = len(u)
-        Ds = 0.3
         H = 2 * np.eye(3 * N)
         f = -2 * np.reshape(np.hstack(u.values()), (3 * N, 1))
         A = np.empty((0, 3 * N))
@@ -309,8 +331,7 @@ class RobotariumEnvironment(object):
         # Robotarium Boundaries
         bds = self.bds
 
-        Ds_bounds = 0.05
-
+        #TODO: Fix this (z-axis boundaries are no longer symmetric!)
         for i in range(N):
             Anew = np.zeros((3, 3 * N))  # np.zeros((6, 3 * N))
             bnew = np.zeros((3, 1))  # np.zeros((6, 1))
@@ -350,11 +371,16 @@ class RobotariumEnvironment(object):
         return u
 
     def plot_robotarium(self, d_buffer=0.1):
-        """Initialize plot of the robotarium environment
+        """Initialize plot of the robotarium environment.
 
-        Returns:
-            ax (Dim3.Axes3D): Robotarium plot
-
+        Parameters
+        -------
+            d_buffer : float, optional
+                    Buffer distance to add to each side of the arena cube (for setting the axes limits)
+        Returns
+        -------
+            ax : Dim3.Axes3D
+               Robotarium plot
         """
 
         fig = plt.figure()

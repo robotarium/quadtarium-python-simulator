@@ -1,26 +1,51 @@
-#!/usr/bin/env python
-
 from math import atan2, sqrt
 import numpy as np
 from utilities_sim.interpolation import spline_interpolation, extract_points
+from control import acker
+
 ''' name: Actuation File
-    author: Christopher Banks
-    date: 09/15/2019
+    author: Christopher Banks and Yousef Emam
+    date: 09/28/2020
     description: Contains files for generating motion in simulation/experiment.'''
 
+
+def gen_chain_of_integrators():
+    """Defines a chain of integrator for xyz: position, velocity, acceleration and jerk.
+       Dynamics of the form: xd = Ax + bu
+
+    Returns
+    -------
+    A : ndarray
+    b : ndarray
+    Kb : ndarray
+    """
+
+    # Define chain of integrator dynamics and controller gains.
+    A = np.array([[0, 1, 0, 0],
+                  [0, 0, 1, 0],
+                  [0, 0, 0, 1],
+                  [0, 0, 0, 0]])
+    b = np.array([[0], [0], [0], [1]])
+    Kb = np.array(acker(A, b, [-12.2, -12.4, -12.6, -12.8]))  # Generate gains using pole placement.
+    return A, b, Kb
+
 def invert_diff_flat_output(x, thrust_hover=0):
-    """Given the full state of the robot, find the control inputs necessary to control the quadcopter in the experiment
-    using differential flatness.
+    """Given the xyz state of the robot, find the control inputs necessary to control the quadcopter in the experiment
+    using differential flatness. No longer used by the simulator.
 
-    Args:
-        x (ndarray): desired state of size (4,3)
-        thrust_hover (float): amount of thrust needed to hover (#TODO:units?)
-
-    Returns:
-        roll (float):
-        pitch (float):
-        yaw (float): Fixed to zero
-        thrust (float):
+    Parameters
+    ----------
+    x : ndarray
+        desired xyz state of the quad. Two dimensional array of size (4,3).
+    thrust_hover : float, optional
+                amount of thrust needed to hover (#TODO:units?)
+    Returns
+    -------
+    roll : float
+    pitch : float
+    yaw :  float
+        As of now, yaw is fixed to 0.
+    thrust : float
     """
 
     m = 35.89 / 1000  # mass of the quad in kg
@@ -43,11 +68,13 @@ def gen_splines(p_now, p_future):
     """Finds a n-differentiable function from p_now to p_future which respects the Robotarium imposed constraints such
     as max velocities.
 
-    Args:
+    Parameters
+    ----------
         p_now (ndarray): current x,y,z position of size (3,)
         p_future (ndarray): desired x,y,z position of size (3,)
 
-    Returns:
+    Returns
+    -------
         traj (ndarray): planned trajectory of size (n_points, 4, 3)
 
     """
