@@ -1,26 +1,25 @@
 # quadcopter-simulator-python
-Robotarium compatible simulator made in python (Python3.5 or later)
+Robotarium compatible simulator made in python (Python3.5 or later).
 
+### Creating a conda environment  
 To use this simulator, we recommend using an Anaconda environment ([Anaconda](https://www.anaconda.com/distribution/))
+. 
+1.  To create a conda environment with the necessary package requirements:\
+    ``conda create --name [name of environment] --file requirements_[platform].txt``  
+    The supported platforms are `linux-64`, `osx-64` and `win-64`.
+1. Activate the environment by running:\
+   ``conda activate [name of environment]``
+1. Install the python-control through pip:\
+    ``pip install control`` 
+1. Navigative to repo:\
+    ``cd quadcopter-simulator-python``
+1. As a sanity check, run the files in the ``examples`` directory using this command:\
+``python -m examples.[filename]`` \
+Make sure to omit the `.py`.
 
-Use the following steps to access the Robotarium examples (after installing anaconda):
-1.  **conda create --name [name of environment] --file quad_sim_env.txt** (this will create a python environment with the
-necessary package requirements)
-1. **conda activate [name of environment]** (activate the environment)
-1. **pip install control** (install the python-control through pip)
-1. **cd quadcopter-simulator-python/**
-1. **python3 -m examples.[filename]** (run the files in the examples/ directory using this command)
-
-To run your own simulations using this simulator:
-1. **move your file to the quadcopter-simulation-python/ directory**
-1. **make sure it has similar syntax to the example files**
-1. run **python3 [your file]**
-
-If you choose to use the simulator without using conda, or the conda text file, download the following packages:
-* python=3.5
-* numpy=1.15.2
-* matplotlib=3.0
-* cvxopt=1.2
-* control=0.8.2
+### Coding up your own experiment using this simulator
+1. Move your file to the `quadcopter-simulation-python` directory
+1. Make sure it has similar syntax to the example files (`examples/go_to_point.py` is a good starting point)
+1. run `python [your file]`
 
 
