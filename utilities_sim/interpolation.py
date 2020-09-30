@@ -199,7 +199,7 @@ def get_unit_poly(t, ord=6, der=0):
         return np.zeros(ord)
 
     # Initialize Exponents Ignoring derivative order for now [ord, ord-1, ... 0]
-    exponents = np.flip(np.arange(0, ord))
+    exponents = np.arange(ord-1, -1, -1)
 
     coeffs = np.ones(ord)
     for i in range(coeffs.shape[0]):
