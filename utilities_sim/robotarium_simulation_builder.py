@@ -266,7 +266,7 @@ class RobotariumEnvironment(object):
 
         """
 
-        repo_path = '../experimental_data/'
+        repo_path = 'experimental_data/'
         if not os.path.isdir(repo_path):
             os.mkdir(repo_path)
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
