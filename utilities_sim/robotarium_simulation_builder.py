@@ -306,7 +306,7 @@ class RobotariumEnvironment(object):
         Kb = self.Kb
         N = len(u)
         H = 2 * np.eye(3 * N)
-        f = -2 * np.reshape(np.hstack(u.values()), (3 * N, 1))
+        f = -2 * np.reshape(np.hstack(list(u.values())), (3 * N, 1))
         A = np.empty((0, 3 * N))
         b = np.empty((0, 1))
         for i in range(N - 1):
