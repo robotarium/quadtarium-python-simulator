@@ -387,7 +387,7 @@ class RobotariumEnvironment(object):
         ax = Dim3.Axes3D(fig)
 
         # Set Axes
-        ax.set_aspect('equal')
+        ax.set_box_aspect([1,1,1])
         ax.set_xlim3d([self.bds[0][0] - d_buffer, self.bds[1][0] + d_buffer])
         ax.set_xlabel('x', fontsize=10)
         ax.set_ylim3d([self.bds[0][1] - d_buffer, self.bds[1][1] + d_buffer])
