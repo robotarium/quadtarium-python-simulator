@@ -1,5 +1,5 @@
 # quadtarium-simulator-python
-The Robotarium quadcopter python simulator (Python3.5 or later). 
+The Robotarium's quadcopter python simulator (Python3.5 or later). 
 
 The purpose of the Robotarium simulator is to ensure that algorithms perform reasonably well before deployment onto the Robotarium's quadcopters (COMING SOON!). The objective is to make scripts created for the simulator directly applicable onto the Robotarium's quadcopters. To ensure minimum modification after deployment, the simulator has been created to closely approximate the actual behavior of the Robotarium's agents.
 
@@ -31,6 +31,6 @@ Make sure to omit the `.py`.
 
 ### References
 <a id="1">[1]</a> 
-Mellinger, Daniel, and Vijay Kumar. "Minimum snap trajectory generation and control for quadrotors." 2011 IEEE international conference on robotics and automation. IEEE, 2011.
+Mellinger, Daniel, and Vijay Kumar. "Minimum snap trajectory generation and control for quadrotors." 2011 IEEE international conference on robotics and automation. IEEE, 2011. \
 <a id="2">[2]</a> 
 Wang, Li, Aaron D. Ames, and Magnus Egerstedt. "Safe certificate-based maneuvers for teams of quadrotors using differential flatness." 2017 IEEE International Conference on Robotics and Automation (ICRA). IEEE, 2017.
