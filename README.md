@@ -16,6 +16,8 @@ To use this simulator, we recommend using an Anaconda environment ([Anaconda](ht
 1. As a sanity check, run the files in the ``examples`` directory using this command:\
 ``python -m examples.[filename]`` \
 Make sure to omit the `.py`.
+1. If you want to install it as a pip package run \
+``pip install -e .``
 
 ### Coding up your own experiment using this simulator
 1. Move your file to the `quadcopter-simulation-python` directory
