@@ -3,7 +3,7 @@ The Robotarium's quadcopter python simulator (Python3.5 or later).
 
 The purpose of the Robotarium simulator is to ensure that algorithms perform reasonably well before deployment onto the Robotarium's quadcopters (COMING SOON!). The objective is to make scripts created for the simulator directly applicable onto the Robotarium's quadcopters. To ensure minimum modification after deployment, the simulator has been created to closely approximate the actual behavior of the Robotarium's agents.
 
-Regarding user-level control, for safety purposes, the user only get to specify a desired position for each quadcopter at each timestep, which is tracked using a differential flatness controller as in [[1]](#1). Also, a collision avoidance solution based on [[2]](#2) is provided to the user.
+Regarding user-level control, for safety purposes, the user only gets to specify a desired position for each quadcopter at each timestep, which is tracked using a differential flatness controller as in [[1]](#1). Also, a collision avoidance solution based on [[2]](#2) is provided to the user.
 
 We recommend trying out the various example files provided to get started! Let us know what you think, we highly value feedback! :-)
 
