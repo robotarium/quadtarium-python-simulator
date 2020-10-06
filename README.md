@@ -1,4 +1,4 @@
-# quadtarium-simulator-python
+# quadtarium-python-simulator
 The Robotarium's quadcopter python simulator (Python3.5 or later). 
 
 The purpose of the Robotarium simulator is to ensure that algorithms perform reasonably well before deployment onto the Robotarium's quadcopters (COMING SOON!). The objective is to make scripts created for the simulator directly applicable onto the Robotarium's quadcopters. To ensure minimum modification after deployment, the simulator has been created to closely approximate the actual behavior of the Robotarium's agents.
@@ -18,7 +18,7 @@ To use this simulator, we recommend using an Anaconda environment ([Anaconda](ht
 1. Install the python-control through pip:\
     ``pip install control``
 1. Navigative to repo:\
-    ``cd quadcopter-simulator-python``
+    ``cd quadtarium-python-simulator``
 1. As a sanity check, run the files in the ``examples`` directory using this command:\
 ``python -m examples.[filename]`` \
 Make sure to omit the `.py`.
@@ -26,7 +26,7 @@ Make sure to omit the `.py`.
 ``pip install -e .``
 
 ### Coding up your own experiment using this simulator
-1. Move your file to the `quadcopter-simulation-python` directory
+1. Move your file to the `quadtarium-python-simulator` directory
 1. Make sure it has similar syntax to the example files (`examples/go_to_point.py` is a good starting point)
 1. run `python [your file]`
 
