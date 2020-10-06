@@ -1,5 +1,5 @@
 # quadcopter-simulator-python
-Robotarium compatible simulator made in python (Python3.5 or later).
+Robotarium quadcopter simulator made in python (Python3.5 or later). The user can specify a desired position for each quadcopter at each timestep, which is then tracked using a differential flatness controller.
 
 ### Creating a conda environment
 To use this simulator, we recommend using an Anaconda environment ([Anaconda](https://www.anaconda.com/distribution/))
