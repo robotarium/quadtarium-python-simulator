@@ -3,11 +3,13 @@ The Robotarium's quadcopter python simulator (Python3.5 or later).
 
 The purpose of the Robotarium simulator is to ensure that algorithms perform reasonably well before deployment onto the Robotarium's quadcopters (COMING SOON!). The objective is to make scripts created for the simulator directly applicable onto the Robotarium's quadcopters. To ensure minimum modification after deployment, the simulator has been created to closely approximate the actual behavior of the Robotarium's agents.
 
-In terms of user-level control, the user can specify a desired position for each quadcopter at each timestep, which is tracked using a differential flatness controller as in [[1]](#1). A collision avoidance solution based on [[2]](#2) is also provided to the user.
+Regarding user-level control, for safety purposes, the user can specify a desired position for each quadcopter at each timestep, which is tracked using a differential flatness controller as in [[1]](#1). Also, a collision avoidance solution based on [[2]](#2) is provided to the user.
+
+We recommend trying out the various example files provided to get started! Let us know what you think, we highly value feedback! :-)
 
 ### Creating a conda environment
-To use this simulator, we recommend using an Anaconda environment ([Anaconda](https://www.anaconda.com/distribution/))
-.
+To use this simulator, we recommend using an Anaconda environment ([Anaconda](https://www.anaconda.com/distribution/)).
+
 1.  To create a conda environment with the necessary package requirements:\
     ``conda create --name [name of environment] --file requirements_[platform].txt --channel conda-forge``  
     The supported platforms are `linux-64`, `osx-64` and `win-64`.
