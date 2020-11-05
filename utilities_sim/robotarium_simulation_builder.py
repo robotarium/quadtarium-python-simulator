@@ -430,6 +430,17 @@ class RobotariumEnvironment(object):
         return ax
 
     def check_pairwise_collisions(self, Ds=0.3):
+        """Throws an AssertionError if any two quadcopter's are too close together.
+
+        Parameters
+        ----------
+            Ds : float, optional
+                Minimum safety distance required between any two quadcopter xyz centroids.
+
+        Returns
+        -------
+
+        """
 
         positions = np.zeros((self.number_of_agents, 3))
 
