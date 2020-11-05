@@ -280,7 +280,7 @@ class RobotariumEnvironment(object):
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file, protocol=2)
 
-    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, Ds = 0.40, Ds_bounds = 0.05):
+    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, Ds = 0.40, Ds_bounds = 0.30):
         """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
         A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh.
 
