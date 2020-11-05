@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # number of iterations the experiment will run for
     COUNT = 900
     # Number of agents
-    N = 3
+    N = 5
     # creates robotarium object, indicate if user would like to save data
     robotarium = robotarium_simulation_builder.RobotariumEnvironment(barriers=True, number_of_agents=N)
     # if specific initial poses are desired, set robotarium.initial_poses (np.array of size Nx3)

@@ -31,7 +31,7 @@ class QuadcopterObject:
 
         # Moment of Inertia Matrix
         #self.I_moment = np.array([[3.11977, -4.94033, -4.6007], [-4.94033, 3.12815, -4.71309], [-4.6007, -4.71309, 7.00414]]) * (10**-5)
-        self.I_moment = np.diag(np.array([3.11977, 3.12815, 7.00414]) * (10 ** -5))
+        self.I_moment = np.diag(np.array([2.3951, 2.3951, 3.2346]) * (10 ** -5))
         self.I_moment_inv = np.linalg.inv(self.I_moment)
 
         # Mass, Gravity and Time Step

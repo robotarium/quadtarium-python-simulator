@@ -24,7 +24,7 @@ TIMEOUT_TIME = 30
 
 class RobotariumEnvironment(object):
 
-    def __init__(self, number_of_agents=1, barriers=True, dt=0.02):
+    def __init__(self, number_of_agents=1, barriers=True, dt=0.02, check_for_collisions=True):
         """Constructor of the robotarium environment class.
 
         Parameters
@@ -50,6 +50,7 @@ class RobotariumEnvironment(object):
         # Control Barrier Functions (CBFs) parameters
         self.barriers = barriers  # Bool indicating whether to ensure safety using CBFs
         solvers.options['show_progress'] = False  # verbose option for the CBF QP solver
+        self.check_for_collisions = check_for_collisions  # Bool indicating whether to check for collisions
 
         # Actual State related parameters
         self.initial_poses = np.array([])
@@ -222,6 +223,10 @@ class RobotariumEnvironment(object):
             self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
             self.vel_prev[i] = self.x_state[i][1, :]
 
+        # Check for collisions
+        if self.check_for_collisions:
+            self.check_pairwise_collisions()
+
         # Data recording
         plt.pause(0.02)
         self.time_record.append(self.run_time())
@@ -275,7 +280,7 @@ class RobotariumEnvironment(object):
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file, protocol=2)
 
-    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, Ds = 0.3, Ds_bounds = 0.05):
+    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, Ds = 0.40, Ds_bounds = 0.05):
         """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
         A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh.
 
@@ -423,4 +428,17 @@ class RobotariumEnvironment(object):
         ax.add_collection3d(collection)
 
         return ax
+
+    def check_pairwise_collisions(self, Ds=0.3):
+
+        positions = np.zeros((self.number_of_agents, 3))
+
+        for i in range(self.number_of_agents):
+            positions[i] = self.pose_real[i]
+            if np.all(positions[i] == np.zeros((3,))):
+                continue
+            # Check if collision occurred
+            assert np.all(np.sum((positions[:i, :] - positions[i, :])**2, axis=1) > Ds**2), "Pairwise collision Occured!"
+
+
 
