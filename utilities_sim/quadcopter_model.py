@@ -30,6 +30,7 @@ class QuadcopterObject:
         self.thrust_hover = 0
 
         # Moment of Inertia Matrix
+        # Source: http://groups.csail.mit.edu/robotics-center/public_papers/Landry15.pdf
         #self.I_moment = np.array([[3.11977, -4.94033, -4.6007], [-4.94033, 3.12815, -4.71309], [-4.6007, -4.71309, 7.00414]]) * (10**-5)
         self.I_moment = np.diag(np.array([2.3951, 2.3951, 3.2346]) * (10 ** -5))
         self.I_moment_inv = np.linalg.inv(self.I_moment)
