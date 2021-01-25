@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     x_desired = np.array([[1.0, -0.9, 0.7]])  # desired position to go to
     t = 0  # current iteration
-    COUNT = 100  # Total number of desired iterations
+    COUNT = 500  # Total number of desired iterations
 
     while t < COUNT:
         # retrieve quadcopter poses (numpy array, n x m x 3) where n is the quadcopter index

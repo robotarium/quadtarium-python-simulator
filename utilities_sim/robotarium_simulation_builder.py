@@ -349,18 +349,18 @@ class RobotariumEnvironment(object):
 
         # Robotarium Boundaries
         bds = self.bds
+        center = (bds[1] + bds[0]) / 2.0
 
-        #TODO: Fix this (z-axis boundaries are no longer symmetric!)
         for i in range(N):
             Anew = np.zeros((3, 3 * N))  # np.zeros((6, 3 * N))
             bnew = np.zeros((3, 1))  # np.zeros((6, 1))
 
             # Both Boundaries (assuming symmetric)
-            pr = x[i][0, :]
+            pr = x[i][0, :] - center
             prd = x[i][1, :]
             prdd = x[i][2, :]
             prddd = x[i][3, :]
-            hs = - pr ** 4 + (bds[1, :] - Ds_bounds) ** 4
+            hs = - pr ** 4 + (bds[1, :] - center - Ds_bounds) ** 4
             hds = - 4 * pr ** 3 * prd
             hdds = - 12 * pr ** 2 * prd ** 2 - 4 * pr ** 3 * prdd
             hddds = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
@@ -406,7 +406,7 @@ class RobotariumEnvironment(object):
         ax = Dim3.Axes3D(fig)
 
         # Set Axes
-        ax.set_box_aspect([1,1,1])
+        # ax.set_box_aspect([1,1,1])
         ax.set_xlim3d([self.bds[0][0] - d_buffer, self.bds[1][0] + d_buffer])
         ax.set_xlabel('x', fontsize=10)
         ax.set_ylim3d([self.bds[0][1] - d_buffer, self.bds[1][1] + d_buffer])
