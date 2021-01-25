@@ -118,9 +118,23 @@ class RobotariumEnvironment(object):
 
         # Initial poses (x,y,z) not specified by the user (Assign random poses)
         if len(self.initial_poses) == 0:
+            epsilon = 0.2  # Add buffer to the bounds
+            bounds = self.bds
+            bounds[0] += epsilon
+            bounds[1] -= epsilon
             self.initial_poses = np.zeros((self.number_of_agents, 3))
-            self.initial_poses[:, 0] = (1.3 - (-1.3)) * np.random.sample(self.number_of_agents) + (-1.3)  # x
-            self.initial_poses[:, 1] = (1.3 - (-1.3)) * np.random.sample(self.number_of_agents) + (-1.3)  # y
+            for i in range(self.number_of_agents):
+                min_dist = -1e10
+                iter = 0
+                while min_dist < 0.5:
+                    self.initial_poses[i] = (bounds[1] - bounds[0]) * np.random.random((1, 3)) + bounds[0]
+                    if i > 0:
+                        min_dist = np.min(np.sum((self.initial_poses[:i, :] - self.initial_poses[i, :])**2, 1))
+                    else:
+                        min_dist = 1e10
+                    iter += 1
+                    if iter == 500:
+                        raise Exception('Could not fit the robots into the arena!')
 
         # Initialize object properties
         for i in range(self.number_of_agents):
