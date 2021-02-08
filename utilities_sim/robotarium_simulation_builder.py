@@ -303,7 +303,7 @@ class RobotariumEnvironment(object):
         -------
             x : dict
               States of the chain of integrators for all quadcopters
-            u : ndarray
+            u : dict  
               User specified desired snaps for chain of integrators.
             zscale : float, optional
                    Scaling of the z-axis
