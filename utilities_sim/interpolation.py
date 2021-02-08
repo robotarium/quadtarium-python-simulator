@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import numpy as np
 
 MAX_VELOCITY = 0.5
