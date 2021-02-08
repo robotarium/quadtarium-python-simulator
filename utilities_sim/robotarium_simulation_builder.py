@@ -63,6 +63,7 @@ class RobotariumEnvironment(object):
         self.x_state = dict()
         self.u = dict()  # control inputs to the chain of integrators
         self.AA, self.bb, self.Kb = gen_chain_of_integrators()  # Dynamics of the chain of integrators
+
         # Data recording
         self.time_record = []  # time data
         self.x_record = []  # x data
@@ -294,7 +295,7 @@ class RobotariumEnvironment(object):
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file, protocol=2)
 
-    def Safe_Barrier_3D(self, x, u=None, zscale=3, gamma=5e-1, Ds = 0.40, Ds_bounds = 0.30):
+    def Safe_Barrier_3D(self, x, u, zscale=3, gamma=5e-1, Ds = 0.40, Ds_bounds = 0.30, boundary_safety=True):
         """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
         A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh.
 
@@ -302,8 +303,8 @@ class RobotariumEnvironment(object):
         -------
             x : dict
               States of the chain of integrators for all quadcopters
-            u : ndarray, optional
-              User specified desired snaps for chain of integrators. If not specified, self.u is used.
+            u : ndarray
+              User specified desired snaps for chain of integrators.
             zscale : float, optional
                    Scaling of the z-axis
             gamma : float, optional
@@ -318,9 +319,6 @@ class RobotariumEnvironment(object):
             u_safe : ndarray
                   Minimally altered inputs to guarantee safety (same size as u).
         """
-
-        if not u:
-            u = self.u
 
         Kb = self.Kb
         N = len(u)
@@ -347,38 +345,38 @@ class RobotariumEnvironment(object):
                 A = np.vstack([A, Anew])
                 b = np.vstack([b, bnew])
 
-        # Robotarium Boundaries
-        bds = self.bds
-        center = (bds[1] + bds[0]) / 2.0
+        if boundary_safety:
+            # Robotarium Boundaries
+            bds = self.bds
+            center = (bds[1] + bds[0]) / 2.0
 
-        for i in range(N):
-            Anew = np.zeros((3, 3 * N))  # np.zeros((6, 3 * N))
-            bnew = np.zeros((3, 1))  # np.zeros((6, 1))
+            for i in range(N):
+                Anew = np.zeros((3, 3 * N))  # np.zeros((6, 3 * N))
+                bnew = np.zeros((3, 1))  # np.zeros((6, 1))
 
-            # Both Boundaries (assuming symmetric)
-            pr = x[i][0, :] - center
-            prd = x[i][1, :]
-            prdd = x[i][2, :]
-            prddd = x[i][3, :]
-            hs = - pr ** 4 + (bds[1, :] - center - Ds_bounds) ** 4
-            hds = - 4 * pr ** 3 * prd
-            hdds = - 12 * pr ** 2 * prd ** 2 - 4 * pr ** 3 * prdd
-            hddds = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
+                # Both Boundaries (assuming symmetric)
+                pr = x[i][0, :] - center
+                prd = x[i][1, :]
+                prdd = x[i][2, :]
+                prddd = x[i][3, :]
+                hs = - pr ** 4 + (bds[1, :] - center - Ds_bounds) ** 4
+                hds = - 4 * pr ** 3 * prd
+                hdds = - 12 * pr ** 2 * prd ** 2 - 4 * pr ** 3 * prdd
+                hddds = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
 
-            Lfh = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
-            Lgh = - 4 * pr ** 3
+                Lfh = - 24 * pr * prd ** 3 - 36 * pr ** 2 * prd * prdd - 4 * pr ** 3 * prddd
+                Lgh = - 4 * pr ** 3
 
-            Anew[:3, 3 * i:3 * i + 3] = - np.diag(Lgh)
-            bnew[:3] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
+                Anew[:3, 3 * i:3 * i + 3] = - np.diag(Lgh)
+                bnew[:3] = (gamma * np.dot(Kb, np.vstack((hs, hds, hdds, hddds))) + Lfh).T
 
-            A = np.vstack([A, Anew])
-            b = np.vstack([b, bnew])
+                A = np.vstack([A, Anew])
+                b = np.vstack([b, bnew])
 
         G = np.vstack([A, -np.eye(3 * N), np.eye(3 * N)])
         amax = 1e4
         h = np.vstack([b, amax * np.ones((3 * N, 1)), amax * np.ones((3 * N, 1))])
         sol = solvers.qp(matrix(H), matrix(f), matrix(G), matrix(h))
-
 
         x = sol['x']
 

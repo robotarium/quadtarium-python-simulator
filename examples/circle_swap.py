@@ -47,7 +47,7 @@ if __name__ == "__main__":
         x = robotarium.get_quadcopter_poses()
 
         # Let's make sure we're close enough to the goals
-        if np.linalg.norm(x_goal[:, :2] - x[:, :2], 1) < 0.03:
+        if np.linalg.norm(x_goal[:, :2] - x[:, :2], 1) < 0.05:
             flag = 1 - flag
 
         if flag == 0:

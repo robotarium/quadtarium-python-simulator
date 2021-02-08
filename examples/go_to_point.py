@@ -1,12 +1,14 @@
 import numpy as np
 from utilities_sim import robotarium_simulation_builder
 
-''' name: Point-to-Point Demo
-    author: Christopher Banks and Yousef Emam
-    date: 09/28/2020
-    description: A simple go to point example. Quadcopters are controlled by allowing users to specify points to the 
-    quadcopters in the form of a numpy array. A spline interpolation program finds splines that satisfy the constraints
-    of the quadcopter and generates an n-differentiable function.'''
+""" 
+name: Point-to-Point Demo
+author: Christopher Banks and Yousef Emam
+date: 09/28/2020
+description: A simple go to point example. Quadcopters are controlled by allowing users to specify points to the 
+quadcopters in the form of a numpy array. A spline interpolation program finds splines that satisfy the constraints
+of the quadcopter and generates an n-differentiable function.
+"""
 
 TIMEOUT = False
 

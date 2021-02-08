@@ -1,12 +1,14 @@
 import numpy as np
 
-MAX_VELOCITY = 0.5
-TIME = 1
+"""
+name: Interpolation File
+authors: Christopher Banks and Yousef Emam
+date: 09/28/2020
+description: Contains helper functions for generating the spline as per the Mellinger controller.
+"""
 
-''' name: Interpolation File
-    authors: Christopher Banks and Yousef Emam
-    date: 09/28/2020
-    description: Contains helper functions for generating the spline as per the Mellinger controller.'''
+MAX_VELOCITY = 0.4
+TIME = 1
 
 
 def spline_interpolation(points, time_interval=None, total_time=None):
@@ -129,6 +131,7 @@ def spline_interpolation(points, time_interval=None, total_time=None):
 
     return coefficients, num_of_coeffs, time_interval
 
+
 def extract_points(coefficients_info, dt=0.02):
     """Extract the xyz poses with derivatives given the spline coefficients.
 
@@ -171,6 +174,7 @@ def extract_points(coefficients_info, dt=0.02):
         points = np.append(points, points_, axis=0)
 
     return points
+
 
 def get_unit_poly(t, ord=6, der=0):
     """Generates polynomials of standard form with all coeffs = 1 if derivative (der) = 0.
