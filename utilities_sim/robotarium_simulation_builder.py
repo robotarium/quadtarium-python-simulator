@@ -290,8 +290,8 @@ class RobotariumEnvironment(object):
         if not os.path.isdir(repo_path):
             os.mkdir(repo_path)
         time_stamp = time.strftime('%d_%B_%Y_%I:%M%p')
-        file_n = repo_path + 'quads_robotarium_sim_' + time_stamp +'.pckl'
-        arrays = [self.time_record, self.x_record, self.orientation_real, self.input_record]
+        file_n = repo_path + 'quads_robotarium_sim_' + time_stamp + '.pckl'
+        arrays = [self.time_record, self.x_record, self.orientation_record, self.input_record]
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file, protocol=2)
 
@@ -303,7 +303,7 @@ class RobotariumEnvironment(object):
         -------
             x : dict
               States of the chain of integrators for all quadcopters
-            u : dict  
+            u : dict
               User specified desired snaps for chain of integrators.
             zscale : float, optional
                    Scaling of the z-axis
@@ -462,6 +462,3 @@ class RobotariumEnvironment(object):
                 continue
             # Check if collision occurred
             assert np.all(np.sum((positions[:i, :] - positions[i, :])**2, axis=1) > Ds**2), "Pairwise collision Occured!"
-
-
-
