@@ -82,32 +82,3 @@ def gen_splines(p_now, p_future):
     traj_coeffs = spline_interpolation(points)
     traj = extract_points(traj_coeffs)
     return traj
-
-
-# TODO: not working
-def vel_back_step(x_state, vel_prev, vel_des, vel_des_prev, dt=0.02):
-    """#TODO: What is this for?
-
-    Args:
-        x_state (ndarray): current state of size (4,3)
-        vel_prev (ndarray): previous velocity of size (3,)
-        vel_des (ndarray): current desired velocity of size (3,)
-        vel_des_prev (ndarray): previous desired velocity of size (3,)
-        dt (float): time step
-
-    Returns:
-        u_3 (ndarray): #TODO: what is this?
-
-    """
-
-    v = x_state[1, :]
-    dv_dt = (v - vel_prev) / dt
-    dv_dt_2 = dv_dt*dv_dt
-
-    d_ves_dt = (vel_des - vel_des_prev) / dt
-    d_ves_dt_2 = d_ves_dt*d_ves_dt
-
-    k_1 = np.array([6, 6, 6])
-    u_3 = -k_1*(v-vel_des)*dv_dt_2 - k_1*(v-vel_des)*d_ves_dt_2
-
-    return u_3

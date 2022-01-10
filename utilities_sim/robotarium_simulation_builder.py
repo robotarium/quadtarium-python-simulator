@@ -70,10 +70,6 @@ class RobotariumEnvironment(object):
         self.input_record = []  # u data
         self.orientation_record = []  # orientation data
 
-        # Backstepping parameters (TODO: not implemented yet...)
-        self.vel_prev = dict()  # for backstepping, vel_prev[i] = np.array((1,3))
-        self.des_vel_prev = dict()  # for backstepping
-
     def get_quadcopter_poses(self):
         """Get quadcopter xyz positions.
 
@@ -143,8 +139,6 @@ class RobotariumEnvironment(object):
             self.poses = self.initial_poses
             self.x_state[i] = np.zeros((4, 3))
             self.x_state[i][0] = self.poses[i]
-            self.vel_prev[i] = np.zeros((1, 3))
-            self.des_vel_prev[i] = np.zeros((1, 3))
 
         self.time_record.append(self.run_time())
         self.x_record.append(self.poses)
@@ -234,9 +228,10 @@ class RobotariumEnvironment(object):
             self.x_state[i] = self.x_state[i] + xd*self.dt
             u_moments = self.crazyflie_objects[i].go_to(self.x_state[i], desired_orientation=None)
             self.crazyflie_objects[i].forward_model(self.robotarium_simulator_plot, u_moments)
-            self.poses[i] = self.x_state[i][0, :]
             self.pose_real[i], self.orientation_real[i] = self.crazyflie_objects[i].get_pose_and_orientation()
-            self.vel_prev[i] = self.x_state[i][1, :]
+            self.x_state[i][0, :] = self.pose_real[i]
+            self.poses[i] = self.x_state[i][0, :]
+
 
         # Check for collisions
         if self.check_for_collisions:
@@ -295,7 +290,7 @@ class RobotariumEnvironment(object):
         with open(file_n, 'wb') as file:
             pickle.dump(arrays, file, protocol=2)
 
-    def Safe_Barrier_3D(self, x, u, zscale=3, gamma=5e-1, Ds = 0.40, Ds_bounds = 0.30, boundary_safety=True):
+    def Safe_Barrier_3D(self, x, u, zscale=3, gamma=5e-1, Ds=0.40, Ds_bounds=0.30, boundary_safety=True):
         """Barrier function method: creates a ellipsoid norm around each quadcopter with a z=0.3 meters
         A QP-solver is used to solve the inequality Lgh*(ui-uj) < gamma*h + Lfh.
 

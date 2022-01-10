@@ -9,7 +9,7 @@ from math import cos, sin
     date: 09/28/2020
     description: Showcases the barrier function utility used in the Robotarium to ensure collision free trajectories.
     A total of five (5) quadcopters are shown in this simulation where four (4) are given commands to fly in a
-    circle. The one (1) remaining quadcopter is instructed to fly in straight lines through the circle formation, 
+    circle. The one (1) remaining quadcopter is instructed to fly in straight lines through the circle formation,
     facilitating colliding behavior. Barrier functions around each quadcopter ensure there is a region of space surrounding
     each quadcopter that remains collision free, maintaining safe flight throughout the experiment.'''
 
@@ -17,7 +17,7 @@ from math import cos, sin
 if __name__ == "__main__":
 
     # start the robotarium environment
-    robotarium = RobotariumEnvironment(number_of_agents=5, barriers=False)
+    robotarium = RobotariumEnvironment(number_of_agents=5, barriers=True)
 
     radii = 0.8  # radius of the circle
     dt = 0.02  # size of time-step
@@ -70,7 +70,7 @@ if __name__ == "__main__":
                     p_hat[i] = points[t_count]
                 elif wp_ind > waypoints.shape[0]:
                     p_hat[i] = points[-1]
-                elif np.linalg.norm((robotarium.poses[i] - waypoints[wp_ind])) < 0.1:
+                elif np.linalg.norm((robotarium.poses[i] - waypoints[wp_ind])) < 0.11:
                     t_count = 0
                     coefficient_info = spline_interpolation(np.array([waypoints[wp_ind], waypoints[wp_ind + 1]]), total_time=interval[wp_ind])
                     points = extract_points(coefficient_info, dt)
@@ -93,11 +93,9 @@ if __name__ == "__main__":
             # Bound the nominal input
             if np.linalg.norm(u_hat[i]) > 1e4:
                 u_hat[i] = u_hat[i]/np.linalg.norm(u_hat[i])*1e4
-        # Generate safe input
-        u = robotarium.Safe_Barrier_3D(x_state, u_hat)
         # Update state of single integrator for each quad
         for i in range(robotarium.number_of_agents):
-            xd = np.dot(A, x_state[i]) + np.dot(b, u[i])
+            xd = np.dot(A, x_state[i]) + np.dot(b, u_hat[i])
             x_state[i] = x_state[i] + xd*dt
             desired_poses[i] = x_state[i][0]
         # set desired poses (must call)
@@ -113,13 +111,11 @@ if __name__ == "__main__":
         goal_x[i] = np.zeros((4, 3))
         goal_x[i][0, :] = initial_points[i]
 
-    while np.any(np.linalg.norm(robotarium.poses - initial_points) > 0.05):
+    while np.any(np.linalg.norm(robotarium.poses - initial_points) > 0.050):
         # Generate control input
         for i in range(robotarium.number_of_agents):
             u_hat[i] = goal_x[i][3, :] - np.dot(Kb, x_state[i] - goal_x[i])
-        u = robotarium.Safe_Barrier_3D(x_state, u_hat)
-        for i in range(robotarium.number_of_agents):
-            xd = np.dot(A, x_state[i]) + np.dot(b, u[i])
+            xd = np.dot(A, x_state[i]) + np.dot(b, u_hat[i])
             x_state[i] = x_state[i] + xd*dt
             desired_poses[i] = x_state[i][0]
 

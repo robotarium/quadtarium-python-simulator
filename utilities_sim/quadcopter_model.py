@@ -41,14 +41,14 @@ class QuadcopterObject:
         self.dt = dt  # time step for simulation
 
         # XYZ Position PID
-        self.kp = np.array([0.4, 0.4, 1.25]) * 0.23  # P np.array([0.4, 0.4, 1.25])
-        self.ki = np.array([0.05, 0.05, 0.05]) * 1e-10  # I np.array([0.05, 0.05, 0.05])
-        self.kd = np.array([0.2, 0.2, 0.4]) * 0.2  # D np.array([0.2, 0.2, 0.4])
+        self.kp = np.array([0.4, 0.4, 1.25]) * 0.30  # P np.array([0.4, 0.4, 1.25])
+        self.ki = np.array([0.05, 0.05, 0.05]) * 1e-9  # I np.array([0.05, 0.05, 0.05])
+        self.kd = np.array([0.2, 0.2, 0.4]) * 0.25  # D np.array([0.2, 0.2, 0.4])
         self.i_range = np.array([2.0, 2.0, 0.4])
 
         # Attitude Gains
-        self.kR = np.array([.7, .7, .6]) * 1e-2  # P np.array([70000, 70000, 60000])
-        self.kw = np.array([0.2, 0.2, 0.12]) * 3e-3  # D [np.array([20000, 20000, 12000])
+        self.kR = np.array([.7, .7, .6]) * 2e-2  # P np.array([70000, 70000, 60000])
+        self.kw = np.array([0.2, 0.2, 0.12]) * 5e-3  # D [np.array([20000, 20000, 12000])
         self.ki_m = np.array([0.0, 0.0, 500]) * 1e-10  # I
         self.i_range_m = np.array([1.0, 1.0, 1500])
 
